@@ -82,18 +82,18 @@ export async function openFlagMenu(player, settlementId) {
       () => openDisbandMenu(player, settlement)
     );
 
-    form.button(acceptLabel);
-    form.button('Исключить игрока');
-    if (next) form.button(upgradeLabel);
-    form.button('Собрать налог');
-    form.button('Назначить префикс');
-    form.button('Объявить войну');
-    form.button('Создать альянс');
-    form.button(disbandLabel);
+    form.button(acceptLabel, 'textures/ui/kingdoms/accept');
+    form.button('Исключить игрока', 'textures/ui/kingdoms/kick');
+    if (next) form.button(upgradeLabel, 'textures/ui/kingdoms/upgrade');
+    form.button('Собрать налог', 'textures/ui/kingdoms/tax');
+    form.button('Назначить префикс', 'textures/ui/kingdoms/prefix');
+    form.button('Объявить войну', 'textures/ui/kingdoms/war');
+    form.button('Создать альянс', 'textures/ui/kingdoms/alliance');
+    form.button(disbandLabel, 'textures/ui/kingdoms/disband');
   } else if (member) {
-    form.button('Покинуть поселение');
+    form.button('Покинуть поселение', 'textures/ui/kingdoms/leave');
   } else {
-    form.button('Подать заявку на вступление');
+    form.button('Подать заявку на вступление', 'textures/ui/kingdoms/join');
   }
 
   const response = await form.show(player);
