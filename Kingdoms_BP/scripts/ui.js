@@ -1,4 +1,4 @@
-import * as serverUi from '@minecraft/server-ui';
+import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { MEMBER_PREFIXES, getNextTier, getTier } from './config.js';
 import {
   acceptAlliance,
@@ -23,36 +23,8 @@ import { declareWar } from './war.js';
 import { world } from '@minecraft/server';
 import { applyNameTag } from './prefixes.js';
 
-const { ActionFormData, ModalFormData } = serverUi;
-
 function kingdomsTitle(title) {
   return title;
-}
-
-function flagMenuTitle(title) {
-  return `kdm:${title}`;
-}
-
-function buildFlagMenuRows(settlement, tier, next) {
-  const rows = [
-    'Зал совета',
-    ' ',
-    `Владение: ${settlement.name}`,
-    `Статус: ${tier.title}`,
-    `Глава: ${settlement.ownerName}`,
-    ' ',
-    `Прочность: ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp}`,
-    `Мораль: ${settlement.morale ?? 0}/100`,
-    `Налог: ${settlement.taxRate} изумр.`,
-    `Территория: ${settlement.radius} блоков`,
-    `Жители: ${settlement.villagersNearby}`,
-    `Игроки: ${settlement.members.length}`,
-    next ? `Дальше: ${next.title}` : 'Предел развития',
-    next ? `Цена: ${tier.upgradeCost}, жители: ${tier.villagersRequired}` : 'Имперская власть закреплена'
-  ];
-
-  while (rows.length < 14) rows.push(' ');
-  return rows.slice(0, 14);
 }
 
 function buildSettlementSummaryRows(settlement, tier, next) {
@@ -112,45 +84,6 @@ function buildFlagMenuBody(settlement, tier, next) {
   return lines.join('\n');
 }
 
-function runMenuAction(player, action) {
-  Promise.resolve()
-    .then(action)
-    .catch((error) => {
-      const message = error?.message ?? String(error);
-      player.sendMessage(`§cОшибка меню: ${message}`);
-      console.warn('[Kingdoms] DDUI action failed:', error);
-    });
-}
-
-async function tryOpenDduiFlagMenu(player, settlement, tier, next, actions) {
-  const CustomForm = serverUi.CustomForm;
-  if (typeof CustomForm !== 'function') return false;
-
-  try {
-    const form = new CustomForm(player, `${tier.title} «${settlement.name}»`);
-
-    if (typeof form.header === 'function') {
-      form.header(`${tier.title} «${settlement.name}»`);
-    }
-    if (typeof form.label === 'function') {
-      form.label(buildFlagMenuBody(settlement, tier, next));
-    }
-    if (typeof form.divider === 'function') {
-      form.divider();
-    }
-
-    for (const { label, action } of actions) {
-      form.button(label, () => runMenuAction(player, action));
-    }
-
-    await form.show();
-    return true;
-  } catch (error) {
-    console.warn('[Kingdoms] DDUI flag menu unavailable, falling back:', error);
-    return false;
-  }
-}
-
 async function openSettlementSummaryMenu(player, settlement) {
   refreshSettlementStats(settlement, player.dimension);
   settlement.taxRate = calcTaxRate(settlement);
@@ -161,7 +94,7 @@ async function openSettlementSummaryMenu(player, settlement) {
   const rows = buildSettlementSummaryRows(settlement, tier, next);
   const form = new ActionFormData()
     .title(kingdomsTitle(`Сводка: ${settlement.name}`))
-    .body('Книга владений. Строки ниже сделаны табличками, чтобы текст не терялся в UI.');
+    .body(buildFlagMenuBody(settlement, tier, next));
 
   for (const row of rows) form.button(row);
   form.button('Назад к флагу');
@@ -206,8 +139,8 @@ export async function openFlagMenu(player, settlementId) {
   const disbandLabel = `Расформировать «${settlement.name}»`;
 
   const form = new ActionFormData()
-    .title(flagMenuTitle(`${tier.title} «${settlement.name}»`))
-    .body(' ');
+    .title(kingdomsTitle(`${tier.title} «${settlement.name}»`))
+    .body(buildFlagMenuBody(settlement, tier, next));
 
   const ownerActions = [];
   const addAction = (label, action) => {
@@ -236,21 +169,12 @@ export async function openFlagMenu(player, settlementId) {
     addAction('Подать заявку на вступление', () => addMember(settlement, player));
   }
 
-  if (await tryOpenDduiFlagMenu(player, settlement, tier, next, ownerActions)) return;
-
-  const statRows = buildFlagMenuRows(settlement, tier, next);
-  while (ownerActions.length < 10) {
-    ownerActions.push({ label: ' ', action: null });
-  }
-
-  for (const row of statRows) form.button(row);
   for (const { label } of ownerActions) form.button(label);
 
   const response = await form.show(player);
   if (response.canceled) return;
-  if (response.selection < statRows.length) return;
 
-  const action = ownerActions[response.selection - statRows.length]?.action;
+  const action = ownerActions[response.selection]?.action;
   if (action) await action();
 }
 
