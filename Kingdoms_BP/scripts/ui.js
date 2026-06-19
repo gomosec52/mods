@@ -26,7 +26,33 @@ import { applyNameTag } from './prefixes.js';
 const { ActionFormData, ModalFormData } = serverUi;
 
 function kingdomsTitle(title) {
+  return title;
+}
+
+function flagMenuTitle(title) {
   return `kdm:${title}`;
+}
+
+function buildFlagMenuRows(settlement, tier, next) {
+  const rows = [
+    'Зал совета',
+    ' ',
+    `Владение: ${settlement.name}`,
+    `Статус: ${tier.title}`,
+    `Глава: ${settlement.ownerName}`,
+    ' ',
+    `Прочность: ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp}`,
+    `Мораль: ${settlement.morale ?? 0}/100`,
+    `Налог: ${settlement.taxRate} изумр.`,
+    `Территория: ${settlement.radius} блоков`,
+    `Жители: ${settlement.villagersNearby}`,
+    `Игроки: ${settlement.members.length}`,
+    next ? `Дальше: ${next.title}` : 'Предел развития',
+    next ? `Цена: ${tier.upgradeCost}, жители: ${tier.villagersRequired}` : 'Имперская власть закреплена'
+  ];
+
+  while (rows.length < 14) rows.push(' ');
+  return rows.slice(0, 14);
 }
 
 function buildSettlementSummaryRows(settlement, tier, next) {
@@ -101,7 +127,7 @@ async function tryOpenDduiFlagMenu(player, settlement, tier, next, actions) {
   if (typeof CustomForm !== 'function') return false;
 
   try {
-    const form = new CustomForm(player, kingdomsTitle(`${tier.title} «${settlement.name}»`));
+    const form = new CustomForm(player, `${tier.title} «${settlement.name}»`);
 
     if (typeof form.header === 'function') {
       form.header(`${tier.title} «${settlement.name}»`);
@@ -180,8 +206,8 @@ export async function openFlagMenu(player, settlementId) {
   const disbandLabel = `Расформировать «${settlement.name}»`;
 
   const form = new ActionFormData()
-    .title(kingdomsTitle(`${tier.title} «${settlement.name}»`))
-    .body(buildFlagMenuBody(settlement, tier, next));
+    .title(flagMenuTitle(`${tier.title} «${settlement.name}»`))
+    .body(' ');
 
   const ownerActions = [];
   const addAction = (label, action) => {
@@ -212,12 +238,15 @@ export async function openFlagMenu(player, settlementId) {
 
   if (await tryOpenDduiFlagMenu(player, settlement, tier, next, ownerActions)) return;
 
+  const statRows = buildFlagMenuRows(settlement, tier, next);
+  for (const row of statRows) form.button(row);
   for (const { label } of ownerActions) form.button(label);
 
   const response = await form.show(player);
   if (response.canceled) return;
+  if (response.selection < statRows.length) return;
 
-  const action = ownerActions[response.selection]?.action;
+  const action = ownerActions[response.selection - statRows.length]?.action;
   if (action) await action();
 }
 
