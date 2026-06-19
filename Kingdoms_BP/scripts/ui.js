@@ -239,6 +239,10 @@ export async function openFlagMenu(player, settlementId) {
   if (await tryOpenDduiFlagMenu(player, settlement, tier, next, ownerActions)) return;
 
   const statRows = buildFlagMenuRows(settlement, tier, next);
+  while (ownerActions.length < 10) {
+    ownerActions.push({ label: ' ', action: null });
+  }
+
   for (const row of statRows) form.button(row);
   for (const { label } of ownerActions) form.button(label);
 

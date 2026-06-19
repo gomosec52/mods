@@ -174,6 +174,7 @@
                 "size": [238, "100%"],
                 "offset": [0, 8],
                 "orientation": "vertical",
+                "collection_name": "form_buttons",
                 "controls": [
                   { "stat_0@server_form.kdm_stat_line": { "collection_index": 0 } },
                   { "stat_1@server_form.kdm_stat_line": { "collection_index": 1 } },
@@ -213,6 +214,7 @@
                       "orientation": "vertical",
                       "anchor_from": "top_middle",
                       "anchor_to": "top_middle",
+                      "collection_name": "form_buttons",
                       "controls": [
                         { "action_0@server_form.kdm_dynamic_button": { "collection_index": 14 } },
                         { "action_1@server_form.kdm_dynamic_button": { "collection_index": 15 } },
@@ -268,6 +270,23 @@
     "orientation": "horizontal",
     "anchor_from": "top_middle",
     "anchor_to": "top_middle",
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons",
+        "binding_name_override": "#kdm_button_text"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not (#kdm_button_text = ' '))",
+        "target_property_name": "#visible"
+      }
+    ],
     "controls": [
       {
         "form_button@common_buttons.light_text_button": {
