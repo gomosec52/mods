@@ -1,0 +1,23 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Kingdoms Survival RP",
+    "description": "Ресурспак для флагов королевств",
+    "uuid": "1f7b2d45-6e8c-7a1b-2d34-000000000004",
+    "version": [4, 1, 0],
+    "min_engine_version": [1, 26, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "2a8c3e56-7f9d-8b2c-3e45-000000000005",
+      "version": [4, 1, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "7c4e9a12-3b5f-4d8e-9a01-000000000001",
+      "version": [4, 1, 0]
+    }
+  ]
+}

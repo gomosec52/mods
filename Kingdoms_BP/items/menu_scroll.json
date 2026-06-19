@@ -1,0 +1,27 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:item": {
+    "description": {
+      "identifier": "kingdoms:menu_scroll",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": "kingdoms_menu_scroll",
+      "minecraft:display_name": {
+        "value": "Свиток поселения"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": false,
+      "minecraft:use_modifiers": {
+        "use_duration": 0.1,
+        "movement_modifier": 0.35
+      },
+      "minecraft:cooldown": {
+        "category": "kingdoms_menu",
+        "duration": 0.5
+      }
+    }
+  }
+}

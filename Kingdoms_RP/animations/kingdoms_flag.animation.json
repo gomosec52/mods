@@ -1,0 +1,16 @@
+{
+  "format_version": "1.8.0",
+  "animation.kingdoms_flag.wave": {
+    "loop": true,
+    "animation_length": 2.5,
+    "bones": {
+      "banner": {
+        "rotation": {
+          "0.0": [0, 0, 0],
+          "1.25": [0, 3, 0],
+          "2.5": [0, 0, 0]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "resource_pack_name": "kingdoms",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "kingdoms_settlement_flag": {
+      "textures": "textures/items/settlement_flag"
+    },
+    "kingdoms_menu_scroll": {
+      "textures": "textures/items/menu_scroll"
+    }
+  }
+}

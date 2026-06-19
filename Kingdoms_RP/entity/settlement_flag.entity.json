@@ -1,0 +1,24 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "kingdoms:settlement_flag",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/settlement_flag"
+      },
+      "geometry": {
+        "default": "geometry.kingdoms_flag"
+      },
+      "animations": {
+        "wave": "animation.kingdoms_flag.wave"
+      },
+      "scripts": {
+        "animate": ["wave"]
+      },
+      "render_controllers": ["controller.render.default"]
+    }
+  }
+}

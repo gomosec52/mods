@@ -1,0 +1,59 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.kingdoms_flag",
+        "texture_width": 64,
+        "texture_height": 64,
+        "visible_bounds_width": 3,
+        "visible_bounds_height": 4,
+        "visible_bounds_offset": [0, 2, 0]
+      },
+      "bones": [
+        {
+          "name": "root",
+          "pivot": [0, 0, 0]
+        },
+        {
+          "name": "pole",
+          "parent": "root",
+          "pivot": [0, 0, 0],
+          "cubes": [
+            {
+              "origin": [-1, 0, -1],
+              "size": [2, 28, 2],
+              "uv": {
+                "north": { "uv": [0, 0], "uv_size": [4, 28] },
+                "south": { "uv": [4, 0], "uv_size": [4, 28] },
+                "east": { "uv": [4, 0], "uv_size": [4, 28] },
+                "west": { "uv": [0, 0], "uv_size": [4, 28] },
+                "up": { "uv": [0, 28], "uv_size": [4, 4] },
+                "down": { "uv": [4, 28], "uv_size": [4, 4] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "banner",
+          "parent": "pole",
+          "pivot": [1, 22, 0],
+          "cubes": [
+            {
+              "origin": [1, 12, -7],
+              "size": [1, 14, 14],
+              "uv": {
+                "east": { "uv": [8, 8], "uv_size": [28, 28] },
+                "west": { "uv": [8, 8], "uv_size": [28, 28] },
+                "north": { "uv": [0, 0], "uv_size": [1, 1] },
+                "south": { "uv": [0, 0], "uv_size": [1, 1] },
+                "up": { "uv": [0, 0], "uv_size": [1, 1] },
+                "down": { "uv": [0, 0], "uv_size": [1, 1] }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
