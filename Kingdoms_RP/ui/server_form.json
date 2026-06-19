@@ -140,136 +140,83 @@
 
   "kdm_content_panel": {
     "type": "stack_panel",
-    "size": ["100%", "100%"],
+    "size": ["100% - 36px", "100% - 28px"],
     "orientation": "vertical",
-    "anchor_from": "top_left",
-    "anchor_to": "top_left",
+    "anchor_from": "top_middle",
+    "anchor_to": "top_middle",
+    "offset": [0, 6],
     "bindings": [
       { "binding_name": "#form_text" },
       { "binding_name": "#title_text" }
     ],
     "controls": [
       {
-        "split_row": {
-          "type": "stack_panel",
-          "size": ["100%", "100%"],
-          "orientation": "horizontal",
-          "anchor_from": "top_left",
-          "anchor_to": "top_left",
-          "controls": [
-            {
-              "left_col": {
-                "type": "panel",
-                "size": [188, "100%"],
-                "controls": [
-                  {
-                    "left_scroll@common.scrolling_panel": {
-                      "anchor_to": "top_left",
-                      "anchor_from": "top_left",
-                      "$show_background": false,
-                      "$always_handle_scrolling": true,
-                      "$allow_scrolling_even_when_content_fits": true,
-                      "$scroll_box_visible": true,
-                      "$scroll_box_visible_touch": true,
-                      "size": ["100%", "100%"],
-                      "$scrolling_content": "server_form.kdm_left_scroll",
-                      "$scroll_size": [10, "100% - 4px"],
-                      "$scroll_size_touch": [14, "100% - 4px"],
-                      "$scrolling_pane_size": ["100% - 12px", "100% - 2px"],
-                      "$scrolling_pane_offset": [2, 0],
-                      "$scroll_bar_right_padding_size": [0, 0]
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "divider": {
-                "type": "image",
-                "texture": "textures/ui/White",
-                "color": [0.35, 0.2, 0.08, 0.45],
-                "size": [2, "100%"]
-              }
-            },
-            {
-              "right_col": {
-                "type": "panel",
-                "size": ["fill", "100%"],
-                "controls": [
-                  {
-                    "right_scroll@common.scrolling_panel": {
-                      "anchor_to": "top_left",
-                      "anchor_from": "top_left",
-                      "$show_background": false,
-                      "$always_handle_scrolling": true,
-                      "$allow_scrolling_even_when_content_fits": true,
-                      "$scroll_box_visible": true,
-                      "$scroll_box_visible_touch": true,
-                      "size": ["100%", "100%"],
-                      "$scrolling_content": "server_form.kdm_right_scroll",
-                      "$scroll_size": [10, "100% - 4px"],
-                      "$scroll_size_touch": [14, "100% - 4px"],
-                      "$scrolling_pane_size": ["100% - 12px", "100% - 2px"],
-                      "$scrolling_pane_offset": [2, 0],
-                      "$scroll_bar_right_padding_size": [0, 0]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
+        "banner": {
+          "type": "image",
+          "texture": "textures/ui/kingdoms/menu_banner",
+          "size": [260, 36],
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle",
+          "alpha": 0.95
         }
-      }
-    ]
-  },
-
-  "kdm_left_scroll": {
-    "type": "stack_panel",
-    "size": [175, "100%c"],
-    "orientation": "vertical",
-    "anchor_from": "top_left",
-    "anchor_to": "top_left",
-    "controls": [
+      },
       {
-        "label_wrap": {
+        "form_text_panel": {
           "type": "panel",
-          "size": ["100%", "100%c"],
+          "size": ["100%", 36],
           "controls": [
             {
-              "stats_label": {
+              "form_text_label": {
                 "type": "label",
-                "offset": [6, 6],
-                "color": [0.15, 0.08, 0.02, 1.0],
-                "font_scale_factor": 1.05,
-                "line_padding": 3,
+                "size": ["100% - 22px", "default"],
+                "offset": [0, 3],
+                "anchor_from": "top_middle",
+                "anchor_to": "top_middle",
+                "text_alignment": "center",
+                "color": [0.18, 0.09, 0.02, 1.0],
+                "font_scale_factor": 0.9,
                 "shadow": false,
-                "size": [165, "default"],
-                "anchor_from": "top_left",
-                "anchor_to": "top_left",
-                "text_alignment": "left",
-                "text": "#form_text"
+                "text": "#form_text",
+                "bindings": [
+                  { "binding_name": "#form_text" }
+                ]
               }
             }
           ]
         }
-      }
-    ]
-  },
-
-  "kdm_right_scroll": {
-    "type": "stack_panel",
-    "size": ["100% - 4px", "100%c"],
-    "orientation": "vertical",
-    "anchor_from": "top_left",
-    "anchor_to": "top_left",
-    "controls": [
+      },
       {
-        "buttons_wrap": {
+        "ornament_top": {
+          "type": "image",
+          "texture": "textures/ui/kingdoms/menu_ornament",
+          "size": [320, 10],
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle",
+          "alpha": 0.75
+        }
+      },
+      {
+        "button_area": {
           "type": "panel",
-          "size": ["100%", "100%c"],
+          "size": ["100%", "fill"],
           "controls": [
             {
-              "buttons@server_form.kdm_buttons_panel": {}
+              "buttons_scroll@common.scrolling_panel": {
+                "anchor_to": "top_middle",
+                "anchor_from": "top_middle",
+                "$show_background": false,
+                "$always_handle_scrolling": true,
+                "$allow_scrolling_even_when_content_fits": true,
+                "$scroll_box_visible": true,
+                "$scroll_box_visible_touch": true,
+                "size": ["100%", "100%"],
+                "$scrolling_content": "server_form.kdm_buttons_panel",
+                "$scroll_size": [10, "100% - 6px"],
+                "$scroll_size_touch": [14, "100% - 6px"],
+                "$scrolling_pane_size": ["100% - 20px", "100% - 4px"],
+                "$scrolling_pane_offset": [4, 2],
+                "$scroll_bar_right_padding_size": [0, 0]
+              }
             }
           ]
         }
@@ -279,7 +226,7 @@
 
   "kdm_dynamic_button": {
     "type": "stack_panel",
-    "size": ["100%", 36],
+    "size": ["100%", 42],
     "orientation": "horizontal",
     "controls": [
       {
@@ -287,12 +234,12 @@
           "$pressed_button_name": "button.form_button_click",
           "anchor_from": "top_left",
           "anchor_to": "top_left",
-          "size": ["100% - 4px", 34],
-          "offset": [2, 1],
+          "size": ["100% - 8px", 38],
+          "offset": [4, 2],
           "$button_text": "#form_button_text",
           "$button_text_binding_type": "collection",
           "$button_text_grid_collection_name": "form_buttons",
-          "$button_text_max_size": ["100%", 18],
+          "$button_text_max_size": ["100% - 16px", 20],
           "$default_button_texture": "textures/ui/kingdoms/button_wood",
           "$hover_button_texture": "textures/ui/kingdoms/button_wood",
           "$pressed_button_texture": "textures/ui/kingdoms/button_danger",
@@ -309,11 +256,11 @@
 
   "kdm_buttons_panel": {
     "type": "stack_panel",
-    "size": ["100% - 4px", "100%c"],
-    "offset": [2, 2],
+    "size": ["100%", "100%c"],
+    "offset": [0, 2],
     "orientation": "vertical",
-    "anchor_from": "top_left",
-    "anchor_to": "top_left",
+    "anchor_from": "top_middle",
+    "anchor_to": "top_middle",
     "factory": {
       "name": "buttons",
       "control_ids": {

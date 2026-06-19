@@ -24,36 +24,34 @@ import { world } from '@minecraft/server';
 import { applyNameTag } from './prefixes.js';
 
 function kingdomsTitle(title) {
-  return title;
+  return `kdm:${title}`;
 }
 
-function buildSettlementSummary(settlement, tier, next) {
-  const lines = [
+function buildSettlementSummaryRows(settlement, tier, next) {
+  const rows = [
     `Название: ${settlement.name}`,
-    `Тип: ${tier.title}`,
+    `Статус: ${tier.title}`,
     `Глава: ${settlement.ownerName}`,
-    '',
-    `Флаг: ${settlement.flagHp ?? tier.flagHp} / ${tier.flagHp} HP`,
+    `Флаг: ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp} HP`,
     `Территория: ${settlement.radius} блоков`,
     `Налог: ${settlement.taxRate} изумр.`,
-    `Мораль: ${settlement.morale ?? 0} / 100`,
-    `Жители NPC: ${settlement.villagersNearby}`,
-    `Участников: ${settlement.members.length}`
+    `Мораль: ${settlement.morale ?? 0}/100`,
+    `Жители: ${settlement.villagersNearby}`,
+    `Игроки: ${settlement.members.length}`
   ];
 
   if (next) {
-    lines.push(
-      '',
-      `Следующий уровень: ${next.title}`,
-      `Цена улучшения: ${tier.upgradeCost} изумр.`,
+    rows.push(
+      `Дальше: ${next.title}`,
+      `Цена: ${tier.upgradeCost} изумр.`,
       `Нужно жителей: ${tier.villagersRequired}`,
-      `После улучшения: ${next.radius} блоков, ${next.flagHp} HP`
+      `Будет: ${next.radius} блоков, ${next.flagHp} HP`
     );
   } else {
-    lines.push('', 'Это максимальный уровень поселения.');
+    rows.push('Достигнут предел развития');
   }
 
-  return lines.join('\n');
+  return rows;
 }
 
 async function openSettlementSummaryMenu(player, settlement) {
@@ -63,13 +61,17 @@ async function openSettlementSummaryMenu(player, settlement) {
 
   const tier = getTier(settlement.tierId);
   const next = getNextTier(settlement.tierId);
-  const response = await new ActionFormData()
+  const rows = buildSettlementSummaryRows(settlement, tier, next);
+  const form = new ActionFormData()
     .title(kingdomsTitle(`Сводка: ${settlement.name}`))
-    .body(buildSettlementSummary(settlement, tier, next))
-    .button('Назад к флагу')
-    .show(player);
+    .body('Книга владений. Строки ниже сделаны табличками, чтобы текст не терялся в UI.');
 
-  if (!response.canceled && response.selection === 0) {
+  for (const row of rows) form.button(row);
+  form.button('Назад к флагу');
+
+  const response = await form.show(player);
+
+  if (!response.canceled && response.selection === rows.length) {
     await openFlagMenu(player, settlement.id);
   }
 }
@@ -108,7 +110,7 @@ export async function openFlagMenu(player, settlementId) {
 
   const form = new ActionFormData()
     .title(kingdomsTitle(`${tier.title} «${settlement.name}»`))
-    .body(`Флаг поселения. Выберите раздел.\nHP: ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp} | Мораль: ${settlement.morale ?? 0}/100`);
+    .body(`Зал совета | HP ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp} | Мораль ${settlement.morale ?? 0}/100`);
 
   const ownerActions = [];
   const addAction = (label, action) => {
@@ -116,18 +118,18 @@ export async function openFlagMenu(player, settlementId) {
     ownerActions.push(action);
   };
 
-  addAction('Сводка поселения', () => openSettlementSummaryMenu(player, settlement));
+  addAction('Книга владений', () => openSettlementSummaryMenu(player, settlement));
 
   if (isOwner) {
     addAction(acceptLabel, () => openAcceptPlayerMenu(player, settlement));
-    addAction('Исключить игрока', () => openKickPlayerMenu(player, settlement));
+    addAction('Изгнать игрока', () => openKickPlayerMenu(player, settlement));
     if (next) {
       addAction(upgradeLabel, () => openUpgradeMenu(player, settlement, next));
     }
-    addAction('Собрать налог', () => collectTax(player, settlement));
-    addAction('Назначить префикс', () => openPrefixMenu(player, settlement));
+    addAction('Собрать подать', () => collectTax(player, settlement));
+    addAction('Назначить титул', () => openPrefixMenu(player, settlement));
     addAction('Объявить войну', () => openWarMenu(player, settlement));
-    addAction('Создать альянс', () => openAllianceMenu(player, settlement));
+    addAction('Заключить альянс', () => openAllianceMenu(player, settlement));
     addAction(disbandLabel, () => openDisbandMenu(player, settlement));
   } else if (member) {
     addAction('Покинуть поселение', () => {
