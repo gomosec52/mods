@@ -54,6 +54,36 @@ function buildSettlementSummaryRows(settlement, tier, next) {
   return rows;
 }
 
+function buildFlagMenuBody(settlement, tier, next) {
+  const lines = [
+    'Зал совета',
+    '',
+    `Владение: ${settlement.name}`,
+    `Статус: ${tier.title}`,
+    `Глава: ${settlement.ownerName}`,
+    '',
+    `Прочность флага: ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp}`,
+    `Мораль: ${settlement.morale ?? 0}/100`,
+    `Налог: ${settlement.taxRate} изумр.`,
+    `Территория: ${settlement.radius} блоков`,
+    `Жители: ${settlement.villagersNearby}`,
+    `Игроки: ${settlement.members.length}`
+  ];
+
+  if (next) {
+    lines.push(
+      '',
+      `Следующий титул: ${next.title}`,
+      `Цена: ${tier.upgradeCost} изумр.`,
+      `Нужно жителей: ${tier.villagersRequired}`
+    );
+  } else {
+    lines.push('', 'Достигнут предел развития.');
+  }
+
+  return lines.join('\n');
+}
+
 async function openSettlementSummaryMenu(player, settlement) {
   refreshSettlementStats(settlement, player.dimension);
   settlement.taxRate = calcTaxRate(settlement);
@@ -110,7 +140,7 @@ export async function openFlagMenu(player, settlementId) {
 
   const form = new ActionFormData()
     .title(kingdomsTitle(`${tier.title} «${settlement.name}»`))
-    .body(`Зал совета | HP ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp} | Мораль ${settlement.morale ?? 0}/100`);
+    .body(buildFlagMenuBody(settlement, tier, next));
 
   const ownerActions = [];
   const addAction = (label, action) => {
