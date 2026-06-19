@@ -253,25 +253,6 @@
     "anchor_to": "top_left",
     "controls": [
       {
-        "banner_wrap": {
-          "type": "panel",
-          "size": ["100%", 72],
-          "controls": [
-            {
-              "banner_img": {
-                "type": "image",
-                "texture": "textures/ui/kingdoms/menu_banner",
-                "size": [60, 60],
-                "anchor_from": "top_middle",
-                "anchor_to": "top_middle",
-                "offset": [0, 6],
-                "keep_ratio": true
-              }
-            }
-          ]
-        }
-      },
-      {
         "label_wrap": {
           "type": "panel",
           "size": ["100%", "100%c"],
@@ -279,19 +260,22 @@
             {
               "stats_label": {
                 "type": "label",
-                "offset": [6, 4],
+                "offset": [8, 8],
                 "color": [0.15, 0.08, 0.02, 1.0],
-                "font_scale_factor": 1.05,
-                "line_padding": 4,
+                "font_scale_factor": 1.0,
+                "line_padding": 5,
                 "shadow": false,
-                "size": [163, "default"],
+                "size": [160, "default"],
                 "anchor_from": "top_left",
                 "anchor_to": "top_left",
                 "text_alignment": "left",
+                "text": "#form_text",
                 "bindings": [
+                  { "binding_name": "#form_text" },
                   {
-                    "binding_name": "#form_text",
-                    "binding_name_override": "#text"
+                    "binding_type": "view",
+                    "source_property_name": "#form_text",
+                    "target_property_name": "#text"
                   }
                 ]
               }
@@ -323,21 +307,76 @@
     ]
   },
 
-  "kdm_dynamic_button": {
-    "type": "panel",
-    "size": ["100%", 42],
+  "kdm_icon_btn_content": {
+    "type": "stack_panel",
+    "orientation": "horizontal",
+    "size": ["100%", "100%"],
+    "anchor_from": "center",
+    "anchor_to": "center",
     "controls": [
       {
-        "form_button@common_buttons.light_text_button": {
+        "icon_slot": {
+          "type": "panel",
+          "size": [30, "100%"],
+          "controls": [
+            {
+              "icon": {
+                "type": "image",
+                "size": [24, 24],
+                "anchor_from": "center",
+                "anchor_to": "center",
+                "keep_ratio": true,
+                "bindings": [
+                  {
+                    "binding_type": "collection",
+                    "binding_name": "#form_button_texture",
+                    "binding_collection_name": "form_buttons",
+                    "binding_name_override": "#texture"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "btn_label": {
+          "type": "label",
+          "size": ["fill", "default"],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "text_alignment": "center",
+          "color": [0.95, 0.88, 0.72, 1.0],
+          "shadow": true,
+          "font_scale_factor": 0.9,
+          "localize": false,
+          "bindings": [
+            {
+              "binding_type": "collection",
+              "binding_name": "#form_button_text",
+              "binding_collection_name": "form_buttons",
+              "binding_name_override": "#text"
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "kdm_dynamic_button": {
+    "type": "panel",
+    "size": ["100%", 40],
+    "controls": [
+      {
+        "btn_bg@common_buttons.light_text_button": {
           "$pressed_button_name": "button.form_button_click",
           "anchor_from": "top_left",
           "anchor_to": "top_left",
-          "size": ["100% - 4px", 38],
-          "offset": [2, 2],
-          "$button_text": "#form_button_text",
-          "$button_text_binding_type": "collection",
-          "$button_text_grid_collection_name": "form_buttons",
-          "$button_text_max_size": ["100% - 36px", 18],
+          "size": ["100% - 6px", 36],
+          "offset": [3, 2],
+          "$button_text": "",
+          "$button_text_binding_type": "none",
+          "$button_text_max_size": [0, 0],
           "$default_button_texture": "textures/ui/kingdoms/button_wood",
           "$hover_button_texture": "textures/ui/kingdoms/button_wood",
           "$pressed_button_texture": "textures/ui/kingdoms/button_danger",
@@ -350,22 +389,11 @@
         }
       },
       {
-        "btn_icon": {
-          "type": "image",
-          "size": [28, 28],
-          "offset": [10, 7],
+        "content@server_form.kdm_icon_btn_content": {
+          "size": ["100% - 10px", 36],
+          "offset": [5, 2],
           "anchor_from": "top_left",
-          "anchor_to": "top_left",
-          "keep_ratio": true,
-          "layer": 4,
-          "bindings": [
-            {
-              "binding_type": "collection",
-              "binding_name": "#form_button_texture",
-              "binding_collection_name": "form_buttons",
-              "binding_name_override": "#texture"
-            }
-          ]
+          "anchor_to": "top_left"
         }
       }
     ]
