@@ -24,7 +24,54 @@ import { world } from '@minecraft/server';
 import { applyNameTag } from './prefixes.js';
 
 function kingdomsTitle(title) {
-  return `kdm:${title}`;
+  return title;
+}
+
+function buildSettlementSummary(settlement, tier, next) {
+  const lines = [
+    `Название: ${settlement.name}`,
+    `Тип: ${tier.title}`,
+    `Глава: ${settlement.ownerName}`,
+    '',
+    `Флаг: ${settlement.flagHp ?? tier.flagHp} / ${tier.flagHp} HP`,
+    `Территория: ${settlement.radius} блоков`,
+    `Налог: ${settlement.taxRate} изумр.`,
+    `Мораль: ${settlement.morale ?? 0} / 100`,
+    `Жители NPC: ${settlement.villagersNearby}`,
+    `Участников: ${settlement.members.length}`
+  ];
+
+  if (next) {
+    lines.push(
+      '',
+      `Следующий уровень: ${next.title}`,
+      `Цена улучшения: ${tier.upgradeCost} изумр.`,
+      `Нужно жителей: ${tier.villagersRequired}`,
+      `После улучшения: ${next.radius} блоков, ${next.flagHp} HP`
+    );
+  } else {
+    lines.push('', 'Это максимальный уровень поселения.');
+  }
+
+  return lines.join('\n');
+}
+
+async function openSettlementSummaryMenu(player, settlement) {
+  refreshSettlementStats(settlement, player.dimension);
+  settlement.taxRate = calcTaxRate(settlement);
+  upsertSettlement(settlement);
+
+  const tier = getTier(settlement.tierId);
+  const next = getNextTier(settlement.tierId);
+  const response = await new ActionFormData()
+    .title(kingdomsTitle(`Сводка: ${settlement.name}`))
+    .body(buildSettlementSummary(settlement, tier, next))
+    .button('Назад к флагу')
+    .show(player);
+
+  if (!response.canceled && response.selection === 0) {
+    await openFlagMenu(player, settlement.id);
+  }
 }
 
 async function askText(player, title, label, placeholder) {
@@ -58,78 +105,41 @@ export async function openFlagMenu(player, settlementId) {
   const acceptLabel = `Принять игрока в ${tier.title.toLowerCase()}`;
   const upgradeLabel = next ? `Улучшить до «${next.title}»` : 'Максимальный уровень';
   const disbandLabel = `Расформировать «${settlement.name}»`;
-  const requirementInfo = next
-    ? [
-        '',
-        `Следующий ранг: ${next.title}`,
-        `Цена: ${tier.upgradeCost} изумр.`,
-        `Нужно жителей: ${tier.villagersRequired}`,
-        `Новая территория: ${next.radius} блоков`,
-        `Новая прочность: ${next.flagHp}`
-      ]
-    : ['', 'Поселение достигло вершины развития.'];
-
-  const leftInfo = [
-    `Тип: ${tier.title}`,
-    `Глава: ${settlement.ownerName}`,
-    `Прочность: ${settlement.flagHp ?? tier.flagHp} / ${tier.flagHp}`,
-    `Территория: ${settlement.radius} блоков`,
-    `Налог: ${settlement.taxRate} изумр.`,
-    `Мораль: ${settlement.morale ?? 0} / 100`,
-    `Жители NPC: ${settlement.villagersNearby}`,
-    `Участников: ${settlement.members.length}`,
-    ...requirementInfo
-  ].join('\n');
 
   const form = new ActionFormData()
     .title(kingdomsTitle(`${tier.title} «${settlement.name}»`))
-    .body(leftInfo);
+    .body(`Флаг поселения. Выберите раздел.\nHP: ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp} | Мораль: ${settlement.morale ?? 0}/100`);
 
   const ownerActions = [];
+  const addAction = (label, action) => {
+    form.button(label);
+    ownerActions.push(action);
+  };
+
+  addAction('Сводка поселения', () => openSettlementSummaryMenu(player, settlement));
 
   if (isOwner) {
-    ownerActions.push(
-      () => openAcceptPlayerMenu(player, settlement),
-      () => openKickPlayerMenu(player, settlement)
-    );
+    addAction(acceptLabel, () => openAcceptPlayerMenu(player, settlement));
+    addAction('Исключить игрока', () => openKickPlayerMenu(player, settlement));
     if (next) {
-      ownerActions.push(() => openUpgradeMenu(player, settlement, next));
+      addAction(upgradeLabel, () => openUpgradeMenu(player, settlement, next));
     }
-    ownerActions.push(
-      () => collectTax(player, settlement),
-      () => openPrefixMenu(player, settlement),
-      () => openWarMenu(player, settlement),
-      () => openAllianceMenu(player, settlement),
-      () => openDisbandMenu(player, settlement)
-    );
-
-    form.button(acceptLabel);
-    form.button('Исключить игрока');
-    if (next) form.button(upgradeLabel);
-    form.button('Собрать налог');
-    form.button('Назначить префикс');
-    form.button('Объявить войну');
-    form.button('Создать альянс');
-    form.button(disbandLabel);
+    addAction('Собрать налог', () => collectTax(player, settlement));
+    addAction('Назначить префикс', () => openPrefixMenu(player, settlement));
+    addAction('Объявить войну', () => openWarMenu(player, settlement));
+    addAction('Создать альянс', () => openAllianceMenu(player, settlement));
+    addAction(disbandLabel, () => openDisbandMenu(player, settlement));
   } else if (member) {
-    form.button('Покинуть поселение');
+    addAction('Покинуть поселение', () => {
+      removeMember(settlement, player.id);
+      player.nameTag = player.name;
+    });
   } else {
-    form.button('Подать заявку на вступление');
+    addAction('Подать заявку на вступление', () => addMember(settlement, player));
   }
 
   const response = await form.show(player);
   if (response.canceled) return;
-
-  if (!isOwner && !member) {
-    addMember(settlement, player);
-    return;
-  }
-
-  if (!isOwner && member) {
-    removeMember(settlement, player.id);
-    player.nameTag = player.name;
-    return;
-  }
 
   const action = ownerActions[response.selection];
   if (action) await action();
