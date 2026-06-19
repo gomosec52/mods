@@ -1,10 +1,10 @@
-/** Прогрессия поселений: деревня → империя */
+/** Прогрессия поселений: деревня -> империя */
 export const TIERS = [
   {
     id: 'village',
     title: 'Деревня',
     nextTitle: 'Большая деревня',
-    radius: 40,
+    radius: 35,
     flagHp: 50,
     createCost: 15,
     upgradeCost: 30,
@@ -15,7 +15,7 @@ export const TIERS = [
     id: 'large_village',
     title: 'Большая деревня',
     nextTitle: 'Замок',
-    radius: 60,
+    radius: 55,
     flagHp: 100,
     upgradeCost: 60,
     villagersRequired: 5,
@@ -34,7 +34,7 @@ export const TIERS = [
   {
     id: 'city',
     title: 'Город',
-    nextTitle: 'Королевство',
+    nextTitle: 'Большой город',
     radius: 120,
     flagHp: 350,
     upgradeCost: 150,
@@ -42,13 +42,23 @@ export const TIERS = [
     leaderPrefix: 'Граф'
   },
   {
+    id: 'great_city',
+    title: 'Большой город',
+    nextTitle: 'Королевство',
+    radius: 160,
+    flagHp: 450,
+    upgradeCost: 210,
+    villagersRequired: 16,
+    leaderPrefix: 'Герцог'
+  },
+  {
     id: 'kingdom',
     title: 'Королевство',
     nextTitle: 'Империя',
-    radius: 200,
-    flagHp: 500,
-    upgradeCost: 250,
-    villagersRequired: 18,
+    radius: 220,
+    flagHp: 600,
+    upgradeCost: 300,
+    villagersRequired: 22,
     leaderPrefix: 'Король'
   },
   {
@@ -67,9 +77,12 @@ export const MEMBER_PREFIXES = [
   'Крестьянин',
   'Ремесленник',
   'Страж',
+  'Купец',
+  'Лекарь',
   'Рыцарь',
   'Дворянин',
-  'Хранитель'
+  'Хранитель',
+  'Воевода'
 ];
 
 export const WORLD_DATA_KEY = 'kingdoms:settlements';

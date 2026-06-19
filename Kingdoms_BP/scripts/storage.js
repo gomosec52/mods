@@ -71,3 +71,18 @@ export function upsertSettlement(settlement) {
 export function removeSettlement(id) {
   saveSettlements(loadSettlements().filter((settlement) => settlement.id !== id));
 }
+
+export function removeSettlementRelations(id) {
+  const settlements = loadSettlements().map((settlement) => ({
+    ...settlement,
+    wars: (settlement.wars ?? []).filter((war) => war.targetId !== id)
+  }));
+  saveSettlements(settlements);
+
+  const alliances = loadAlliances().filter((alliance) => {
+    if (alliance.fromId === id || alliance.toId === id) return false;
+    if (alliance.members?.includes(id)) return false;
+    return true;
+  });
+  saveAlliances(alliances);
+}

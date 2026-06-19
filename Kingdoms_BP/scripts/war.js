@@ -2,15 +2,17 @@ import { getSettlementAtPosition, getSettlementByPlayer, loadSettlements } from 
 import { isAlly } from './territory.js';
 import { loadAlliances } from './storage.js';
 
-function isMember(settlement, playerId) {
-  return settlement?.members?.some((member) => member.playerId === playerId) ?? false;
+function isMember(settlement, playerId, playerName = '') {
+  return settlement?.members?.some((member) =>
+    member.playerId === playerId || (!!playerName && member.playerName === playerName)
+  ) ?? false;
 }
 
 export function canOutsiderHarmInTerritory(player, settlement) {
   if (!settlement) return true;
-  if (isMember(settlement, player.id)) return true;
+  if (isMember(settlement, player.id, player.name)) return true;
 
-  const playerSettlement = getSettlementByPlayer(player.id);
+  const playerSettlement = getSettlementByPlayer(player.id, player.name);
   const alliances = loadAlliances();
   if (playerSettlement && isAlly(playerSettlement, settlement, alliances)) return true;
 
@@ -26,10 +28,10 @@ export function getProtectionMessage(settlement) {
   return `§cТерритория «${settlement.name}» защищена. Объявите войну, чтобы нарушать порядок.`;
 }
 
-export function getTerritoryOwnerAt(dimensionId, x, z, playerId) {
+export function getTerritoryOwnerAt(dimensionId, x, z, playerId, playerName = '') {
   const settlement = getSettlementAtPosition(dimensionId, x, z);
   if (!settlement) return null;
-  if (canOutsiderHarmInTerritory({ id: playerId }, settlement)) return null;
+  if (canOutsiderHarmInTerritory({ id: playerId, name: playerName }, settlement)) return null;
   return settlement;
 }
 
@@ -41,6 +43,9 @@ export function isAtWar(attackerSettlement, defenderSettlement) {
 }
 
 export function declareWar(sourceSettlement, targetSettlement) {
+  if (!sourceSettlement || !targetSettlement || sourceSettlement.id === targetSettlement.id) return false;
+  if (isAlly(sourceSettlement, targetSettlement, loadAlliances())) return false;
+
   sourceSettlement.wars = sourceSettlement.wars ?? [];
   if (!sourceSettlement.wars.some((war) => war.targetId === targetSettlement.id && war.active)) {
     sourceSettlement.wars.push({
@@ -49,6 +54,7 @@ export function declareWar(sourceSettlement, targetSettlement) {
       active: true,
       declaredAt: Date.now()
     });
+    sourceSettlement.morale = Math.max(0, (sourceSettlement.morale ?? 80) - 6);
   }
 
   targetSettlement.wars = targetSettlement.wars ?? [];
@@ -59,7 +65,10 @@ export function declareWar(sourceSettlement, targetSettlement) {
       active: true,
       declaredAt: Date.now()
     });
+    targetSettlement.morale = Math.max(0, (targetSettlement.morale ?? 80) - 6);
   }
+
+  return true;
 }
 
 export function endWar(winnerSettlementId, loserSettlementId) {

@@ -1,12 +1,30 @@
 import { loadAlliances, saveAlliances } from './storage.js';
 
-export function createAllianceProposal(fromSettlementId, toSettlementId) {
+export function areSettlementsAllied(settlementAId, settlementBId) {
+  return loadAlliances().some((alliance) =>
+    alliance.status === 'active' &&
+    alliance.members?.includes(settlementAId) &&
+    alliance.members?.includes(settlementBId)
+  );
+}
+
+export function hasPendingAlliance(fromSettlementId, toSettlementId) {
+  return loadAlliances().some((alliance) =>
+    alliance.status === 'pending' &&
+    (
+      (alliance.fromId === fromSettlementId && alliance.toId === toSettlementId) ||
+      (alliance.fromId === toSettlementId && alliance.toId === fromSettlementId)
+    )
+  );
+}
+
+export function createAllianceProposal(fromSettlementId, toSettlementId, allianceName) {
   return {
     id: `ally_${Date.now()}`,
     fromId: fromSettlementId,
     toId: toSettlementId,
     status: 'pending',
-    name: null,
+    name: allianceName,
     createdAt: Date.now()
   };
 }
@@ -21,7 +39,7 @@ export function acceptAlliance(proposal, allianceName) {
   const all = loadAlliances().filter((item) => item.id !== proposal.id);
   all.push({
     id: proposal.id,
-    name: allianceName,
+    name: allianceName || proposal.name,
     members: [proposal.fromId, proposal.toId],
     status: 'active',
     createdAt: Date.now()

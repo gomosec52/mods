@@ -1,6 +1,13 @@
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { MEMBER_PREFIXES, getNextTier, getTier } from './config.js';
-import { acceptAlliance, createAllianceProposal, getPendingAllianceForSettlement, rejectAlliance } from './alliance.js';
+import {
+  acceptAlliance,
+  areSettlementsAllied,
+  createAllianceProposal,
+  getPendingAllianceForSettlement,
+  hasPendingAlliance,
+  rejectAlliance
+} from './alliance.js';
 import { calcTaxRate } from './morale.js';
 import {
   addMember,
@@ -14,6 +21,7 @@ import { getSettlementById, getSettlementByPlayer, loadAlliances, loadSettlement
 import { refreshSettlementStats } from './territory.js';
 import { declareWar } from './war.js';
 import { world } from '@minecraft/server';
+import { applyNameTag } from './prefixes.js';
 
 function kingdomsTitle(title) {
   return `kdm:${title}`;
@@ -47,17 +55,30 @@ export async function openFlagMenu(player, settlementId) {
   const next = getNextTier(settlement.tierId);
   const member = settlement.members.find((item) => item.playerId === player.id || item.playerName === player.name);
   const isOwner = settlement.ownerId === player.id || settlement.ownerName === player.name;
-  const acceptLabel = 'Принять игрока';
+  const acceptLabel = `Принять игрока в ${tier.title.toLowerCase()}`;
   const upgradeLabel = next ? `Улучшить до «${next.title}»` : 'Максимальный уровень';
   const disbandLabel = `Расформировать «${settlement.name}»`;
+  const requirementInfo = next
+    ? [
+        '',
+        `Следующий ранг: ${next.title}`,
+        `Цена: ${tier.upgradeCost} изумр.`,
+        `Нужно жителей: ${tier.villagersRequired}`,
+        `Новая территория: ${next.radius} блоков`,
+        `Новая прочность: ${next.flagHp}`
+      ]
+    : ['', 'Поселение достигло вершины развития.'];
 
   const leftInfo = [
+    `Тип: ${tier.title}`,
+    `Глава: ${settlement.ownerName}`,
     `Прочность: ${settlement.flagHp ?? tier.flagHp} / ${tier.flagHp}`,
     `Территория: ${settlement.radius} блоков`,
     `Налог: ${settlement.taxRate} изумр.`,
     `Мораль: ${settlement.morale ?? 0} / 100`,
     `Жители NPC: ${settlement.villagersNearby}`,
-    `Участников: ${settlement.members.length}`
+    `Участников: ${settlement.members.length}`,
+    ...requirementInfo
   ].join('\n');
 
   const form = new ActionFormData()
@@ -116,7 +137,8 @@ export async function openFlagMenu(player, settlementId) {
 
 async function openAcceptPlayerMenu(player, settlement) {
   const online = [...world.getPlayers()].filter((p) =>
-    !settlement.members.some((member) => member.playerId === p.id)
+    !settlement.members.some((member) => member.playerId === p.id || member.playerName === p.name) &&
+    !getSettlementByPlayer(p.id, p.name)
   );
   if (!online.length) {
     player.sendMessage('§cНет игроков для приглашения.');
@@ -143,7 +165,6 @@ async function openKickPlayerMenu(player, settlement) {
 }
 
 async function openUpgradeMenu(player, settlement, nextTier) {
-  const currentTier = getTier(settlement.tierId);
   const newName = await askText(
     player,
     `Улучшение до ${nextTier.title}`,
@@ -173,15 +194,20 @@ async function openPrefixMenu(player, settlement) {
   const target = members[memberResponse.selection];
   target.prefix = MEMBER_PREFIXES[prefixResponse.selection];
   upsertSettlement(settlement);
-  const online = [...world.getPlayers()].find((p) => p.id === target.playerId);
-  if (online) online.sendMessage(`§aВам назначен префикс: ${target.prefix}`);
+  const online = [...world.getPlayers()].find((p) => p.id === target.playerId || p.name === target.playerName);
+  if (online) {
+    applyNameTag(online, settlement, target);
+    online.sendMessage(`§aВам назначен префикс: ${target.prefix}`);
+  }
   player.sendMessage(`§aПрефикс «${target.prefix}» выдан игроку ${target.playerName}.`);
 }
 
 async function openWarMenu(player, settlement) {
-  const others = loadSettlements().filter((item) => item.id !== settlement.id);
+  const others = loadSettlements().filter((item) =>
+    item.id !== settlement.id && !areSettlementsAllied(settlement.id, item.id)
+  );
   if (!others.length) {
-    player.sendMessage('§cНет других поселений.');
+    player.sendMessage('§cНет поселений, которым можно объявить войну.');
     return;
   }
   const form = new ActionFormData().title(kingdomsTitle('Объявить войну')).body(' ');
@@ -192,10 +218,14 @@ async function openWarMenu(player, settlement) {
   const response = await form.show(player);
   if (response.canceled) return;
   const target = others[response.selection];
-  declareWar(settlement, target);
+  const declared = declareWar(settlement, target);
+  if (!declared) {
+    player.sendMessage('§cНельзя объявить войну этому поселению.');
+    return;
+  }
   upsertSettlement(settlement);
   upsertSettlement(target);
-  world.sendMessage(`§4${settlement.name} объявил войну поселению ${target.name}!`);
+  world.sendMessage(`§4${settlement.name} объявил войну поселению ${target.name}! Победит тот, кто сломает вражеский флаг.`);
 }
 
 async function openDisbandMenu(player, settlement) {
@@ -219,18 +249,17 @@ async function openDisbandMenu(player, settlement) {
 
 async function openAllianceMenu(player, settlement) {
   const pending = getPendingAllianceForSettlement(settlement.id);
-  if (pending && settlement.ownerId === player.id) {
+  if (pending && (settlement.ownerId === player.id || settlement.ownerName === player.name)) {
     const from = getSettlementById(pending.fromId);
     const form = new ActionFormData()
       .title(kingdomsTitle('Предложение альянса'))
-      .body(`${from?.name ?? 'Поселение'} предлагает альянс.`)
+      .body(`${from?.name ?? 'Поселение'} предлагает альянс «${pending.name ?? 'Безымянный союз'}».`)
       .button('Принять')
       .button('Отказать');
     const response = await form.show(player);
     if (response.canceled) return;
     if (response.selection === 0) {
-      const name = await askText(player, 'Название альянса', 'Имя союза', 'Серебряный союз');
-      if (!name) return;
+      const name = pending.name || 'Безымянный союз';
       acceptAlliance(pending, name);
       world.sendMessage(`§bСоздан альянс «${name}» между ${from?.name} и ${settlement.name}.`);
     } else {
@@ -240,7 +269,11 @@ async function openAllianceMenu(player, settlement) {
     return;
   }
 
-  const others = loadSettlements().filter((item) => item.id !== settlement.id);
+  const others = loadSettlements().filter((item) =>
+    item.id !== settlement.id &&
+    !areSettlementsAllied(settlement.id, item.id) &&
+    !hasPendingAlliance(settlement.id, item.id)
+  );
   if (!others.length) {
     player.sendMessage('§cНет других поселений для альянса.');
     return;
@@ -253,16 +286,18 @@ async function openAllianceMenu(player, settlement) {
   const response = await form.show(player);
   if (response.canceled) return;
   const target = others[response.selection];
+  const allianceName = await askText(player, 'Название альянса', 'Как назвать союз?', 'Серебряный союз');
+  if (!allianceName) return;
   const alliances = loadAlliances();
-  alliances.push(createAllianceProposal(settlement.id, target.id));
+  alliances.push(createAllianceProposal(settlement.id, target.id, allianceName.slice(0, 24)));
   saveAlliances(alliances);
-  player.sendMessage(`§aПредложение альянса отправлено в «${target.name}».`);
-  const owner = [...world.getPlayers()].find((p) => p.id === target.ownerId);
-  owner?.sendMessage(`§b${settlement.name} предлагает вам альянс. Откройте флаг своего поселения.`);
+  player.sendMessage(`§aПредложение альянса «${allianceName}» отправлено в «${target.name}».`);
+  const owner = [...world.getPlayers()].find((p) => p.id === target.ownerId || p.name === target.ownerName);
+  owner?.sendMessage(`§b${settlement.name} предлагает вам альянс «${allianceName}». Откройте флаг своего поселения.`);
 }
 
 export async function openPendingFlagPlacementMenu(player, flagPos) {
-  const existing = getSettlementByPlayer(player.id);
+  const existing = getSettlementByPlayer(player.id, player.name);
   if (existing) {
     player.sendMessage('§cУ вас уже есть поселение.');
     return;

@@ -1,5 +1,4 @@
 import { getTier } from './config.js';
-import { loadSettlements } from './storage.js';
 
 export function distance2d(ax, az, bx, bz) {
   const dx = ax - bx;
@@ -18,6 +17,7 @@ export function territoriesOverlap(settlement, nextRadius, allSettlements, allia
   const conflicts = [];
   for (const other of allSettlements) {
     if (other.id === settlement.id) continue;
+    if (other.dimensionId !== settlement.dimensionId) continue;
     if (isAlly(settlement, other, alliances)) continue;
     const dist = distance2d(settlement.flagX, settlement.flagZ, other.flagX, other.flagZ);
     if (dist < nextRadius + other.radius) {

@@ -8,12 +8,13 @@ import {
   getSettlementByPlayer,
   loadAlliances,
   loadSettlements,
+  removeSettlementRelations,
   removeSettlement,
+  saveSettlements,
   upsertSettlement
 } from './storage.js';
-import { countVillagersNear, refreshSettlementStats, territoriesOverlap } from './territory.js';
+import { refreshSettlementStats, territoriesOverlap } from './territory.js';
 import { endWar, isAtWar } from './war.js';
-import { saveSettlements } from './storage.js';
 
 function randomId() {
   return `st_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
@@ -49,6 +50,24 @@ function removeEmeralds(player, amount) {
   return left <= 0;
 }
 
+function giveEmeralds(player, amount) {
+  const inv = player.getComponent('minecraft:inventory')?.container;
+  if (!inv) return 0;
+
+  let left = amount;
+  while (left > 0) {
+    const stack = Math.min(64, left);
+    const overflow = inv.addItem(new ItemStack('minecraft:emerald', stack));
+    if (overflow) {
+      left -= stack - overflow.amount;
+      break;
+    }
+    left -= stack;
+  }
+
+  return amount - left;
+}
+
 export function spawnFlagEntity(dimension, x, y, z, settlement) {
   const tier = getTier(settlement.tierId);
   const entity = dimension.spawnEntity(FLAG_ENTITY_TYPE, { x: x + 0.5, y, z: z + 0.5 });
@@ -57,6 +76,7 @@ export function spawnFlagEntity(dimension, x, y, z, settlement) {
   entity.setDynamicProperty('kingdoms:settlementId', settlement.id);
   entity.setDynamicProperty('kingdoms:hp', tier.flagHp);
   entity.setDynamicProperty('kingdoms:maxHp', tier.flagHp);
+  entity.removeTag('kingdoms:unclaimed');
   return entity;
 }
 
@@ -78,16 +98,6 @@ export function createSettlement(player, name, flagPos) {
   }
 
   const tier = getTier('village');
-  if (countEmeralds(player) < tier.createCost) {
-    player.sendMessage(`§cНужно ${tier.createCost} изумрудов для основания деревни.`);
-    return null;
-  }
-
-  if (!removeEmeralds(player, tier.createCost)) {
-    player.sendMessage('§cНе удалось списать изумруды.');
-    return null;
-  }
-
   const settlement = {
     id: randomId(),
     name,
@@ -108,6 +118,33 @@ export function createSettlement(player, name, flagPos) {
     villagersNearby: 0
   };
 
+  if (loadSettlements().some((item) => item.name.toLowerCase() === name.toLowerCase())) {
+    player.sendMessage('§cПоселение с таким названием уже существует.');
+    return null;
+  }
+
+  const conflicts = territoriesOverlap(
+    settlement,
+    tier.radius,
+    loadSettlements(),
+    loadAlliances()
+  );
+  if (conflicts.length > 0) {
+    const names = conflicts.map((item) => `${getTier(item.tierId).title} «${item.name}»`).join(', ');
+    player.sendMessage(`§cНельзя основать деревню: рядом территория ${names}.`);
+    return null;
+  }
+
+  if (countEmeralds(player) < tier.createCost) {
+    player.sendMessage(`§cНужно ${tier.createCost} изумрудов для основания деревни.`);
+    return null;
+  }
+
+  if (!removeEmeralds(player, tier.createCost)) {
+    player.sendMessage('§cНе удалось списать изумруды.');
+    return null;
+  }
+
   refreshSettlementStats(settlement, player.dimension);
   settlement.taxRate = calcTaxRate(settlement);
   upsertSettlement(settlement);
@@ -117,10 +154,12 @@ export function createSettlement(player, name, flagPos) {
     location: { x: flagPos.x, y: flagPos.y, z: flagPos.z },
     maxDistance: 2
   });
-  const flag = entities[0] ?? spawnFlagEntity(player.dimension, flagPos.x, flagPos.y, flagPos.z, settlement);
+  const flag = entities.find((entity) => !entity.getDynamicProperty('kingdoms:settlementId')) ??
+    spawnFlagEntity(player.dimension, flagPos.x, flagPos.y, flagPos.z, settlement);
   flag.setDynamicProperty('kingdoms:settlementId', settlement.id);
   flag.setDynamicProperty('kingdoms:hp', tier.flagHp);
   flag.setDynamicProperty('kingdoms:maxHp', tier.flagHp);
+  flag.removeTag('kingdoms:unclaimed');
   flag.nameTag = formatSettlementFlagLabel(settlement);
 
   applyNameTag(player, settlement, settlement.members[0]);
@@ -138,7 +177,7 @@ export function upgradeSettlement(player, settlement, newName) {
     return;
   }
 
-  if (settlement.ownerId !== player.id) {
+  if (settlement.ownerId !== player.id && settlement.ownerName !== player.name) {
     player.sendMessage('§cТолько глава может улучшать поселение.');
     return;
   }
@@ -179,6 +218,10 @@ export function upgradeSettlement(player, settlement, newName) {
   settlement.radius = next.radius;
   settlement.flagHp = next.flagHp;
   settlement.flagMaxHp = next.flagHp;
+  const ownerMember = settlement.members.find((member) =>
+    member.playerId === settlement.ownerId || member.playerName === settlement.ownerName
+  );
+  if (ownerMember) ownerMember.prefix = next.leaderPrefix;
   boostMoraleOnUpgrade(settlement);
   refreshSettlementStats(settlement, player.dimension);
   settlement.taxRate = calcTaxRate(settlement);
@@ -207,6 +250,7 @@ export function dissolveSettlement(settlement, reason) {
     player.sendMessage(`§cПоселение «${settlement.name}» расформировано.`);
   }
 
+  removeSettlementRelations(settlement.id);
   removeSettlement(settlement.id);
   world.sendMessage(`§cПоселение «${settlement.name}» распалось. Причина: ${reason}`);
 }
@@ -245,11 +289,11 @@ export function damageFlag(entity, amount, attacker) {
 }
 
 export function addMember(settlement, player) {
-  if (settlement.members.some((member) => member.playerId === player.id)) {
+  if (settlement.members.some((member) => member.playerId === player.id || member.playerName === player.name)) {
     player.sendMessage('§cВы уже в этом поселении.');
     return;
   }
-  if (getSettlementByPlayer(player.id)) {
+  if (getSettlementByPlayer(player.id, player.name)) {
     player.sendMessage('§cСначала покиньте своё текущее поселение.');
     return;
   }
@@ -271,15 +315,19 @@ export function removeMember(settlement, playerId) {
 }
 
 export function collectTax(player, settlement) {
-  if (settlement.ownerId !== player.id) {
+  if (settlement.ownerId !== player.id && settlement.ownerName !== player.name) {
     player.sendMessage('§cТолько глава собирает налог.');
     return;
   }
   const tax = settlement.taxRate ?? calcTaxRate(settlement);
   let collected = 0;
+  refreshSettlementStats(settlement, player.dimension);
+
   for (const member of settlement.members) {
     if (member.playerId === settlement.ownerId) continue;
-    const target = [...world.getPlayers()].find((p) => p.id === member.playerId);
+    const target = [...world.getPlayers()].find((p) =>
+      p.id === member.playerId || p.name === member.playerName
+    );
     if (!target) continue;
     if (countEmeralds(target) < tax) {
       settlement.morale = Math.max(0, (settlement.morale ?? 50) - 5);
@@ -291,11 +339,15 @@ export function collectTax(player, settlement) {
       target.sendMessage(`§eВы заплатили налог ${tax} изумрудов поселению «${settlement.name}».`);
     }
   }
+  const villagerTaxes = Math.floor((settlement.villagersNearby ?? 0) / 2);
+  if (villagerTaxes > 0) {
+    collected += villagerTaxes;
+  }
+
   if (collected > 0) {
-    const inv = player.getComponent('minecraft:inventory')?.container;
-    inv?.addItem(new ItemStack('minecraft:emerald', collected));
+    const delivered = giveEmeralds(player, collected);
     settlement.morale = Math.min(100, (settlement.morale ?? 50) + 3);
-    player.sendMessage(`§aСобрано налогов: ${collected} изумрудов.`);
+    player.sendMessage(`§aСобрано налогов: ${delivered} изумрудов. Вклад жителей: ${villagerTaxes}.`);
   } else {
     player.sendMessage('§cНикто не смог заплатить налог.');
   }

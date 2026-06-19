@@ -31,7 +31,7 @@ function safeSubscribe(signal, handler) {
 function greet(player) {
   if (!player?.isValid || greeted.has(player.id)) return;
   greeted.add(player.id);
-  player.sendMessage('§a[Kingdoms] Мод загружен (v4.1.0).');
+  player.sendMessage('§a[Kingdoms] Мод загружен (v4.2.0).');
   player.sendMessage('§7ПКМ по флагу / свиток = меню. ЛКМ = удар.');
   player.sendMessage(
     getChatPrefixMode() === 'before'
@@ -65,7 +65,7 @@ function preparePlacedFlag(player) {
   }
 }
 
-console.warn('[Kingdoms] loading v4.1.0');
+console.warn('[Kingdoms] loading v4.2.0');
 
 function tryBindChatPrefix() {
   const ok = bindChatPrefix();
@@ -114,13 +114,32 @@ safeSubscribe(world.afterEvents.playerInteractWithEntity, (event) => {
 });
 
 safeSubscribe(world.beforeEvents.entityHurt, (event) => {
-  if (event.hurtEntity.typeId !== FLAG_ENTITY_TYPE) return;
   const attacker = event.damageSource.damagingEntity;
+
+  if (event.hurtEntity.typeId === FLAG_ENTITY_TYPE) {
+    if (attacker?.typeId !== 'minecraft:player') return;
+    const settlementId = event.hurtEntity.getDynamicProperty('kingdoms:settlementId');
+    if (!settlementId) return;
+
+    event.cancel = true;
+    const damage = Math.max(1, Math.floor(event.damage || 1));
+    system.run(() => damageFlag(event.hurtEntity, damage, attacker));
+    return;
+  }
+
+  if (event.hurtEntity.typeId !== 'minecraft:player') return;
   if (attacker?.typeId !== 'minecraft:player') return;
 
+  const owner = getTerritoryOwnerAt(
+    event.hurtEntity.dimension.id,
+    event.hurtEntity.location.x,
+    event.hurtEntity.location.z,
+    attacker.id,
+    attacker.name
+  );
+  if (!owner) return;
   event.cancel = true;
-  const damage = Math.max(1, Math.floor(event.damage || 1));
-  system.run(() => damageFlag(event.hurtEntity, damage, attacker));
+  attacker.sendMessage(getProtectionMessage(owner));
 });
 
 safeSubscribe(world.beforeEvents.playerBreakBlock, (event) => {
@@ -128,7 +147,22 @@ safeSubscribe(world.beforeEvents.playerBreakBlock, (event) => {
     event.player.dimension.id,
     event.block.location.x,
     event.block.location.z,
-    event.player.id
+    event.player.id,
+    event.player.name
+  );
+  if (!owner) return;
+  event.cancel = true;
+  event.player.sendMessage(getProtectionMessage(owner));
+});
+
+safeSubscribe(world.beforeEvents.playerPlaceBlock, (event) => {
+  const location = event.block?.location ?? event.player.location;
+  const owner = getTerritoryOwnerAt(
+    event.player.dimension.id,
+    location.x,
+    location.z,
+    event.player.id,
+    event.player.name
   );
   if (!owner) return;
   event.cancel = true;
@@ -141,15 +175,19 @@ safeSubscribe(world.beforeEvents.playerInteractWithBlock, (event) => {
     id.includes('chest') ||
     id.includes('barrel') ||
     id.includes('shulker') ||
+    id.includes('door') ||
+    id.includes('fence_gate') ||
     id.includes('button') ||
-    id.includes('lever');
+    id.includes('lever') ||
+    id.includes('trapdoor');
   if (!isProtected) return;
 
   const owner = getTerritoryOwnerAt(
     event.player.dimension.id,
     event.block.location.x,
     event.block.location.z,
-    event.player.id
+    event.player.id,
+    event.player.name
   );
   if (!owner) return;
   event.cancel = true;
@@ -203,4 +241,4 @@ system.runInterval(() => {
   }
 }, 1200);
 
-console.warn('[Kingdoms] ready v4.1.0');
+console.warn('[Kingdoms] ready v4.2.0');
