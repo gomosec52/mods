@@ -31,7 +31,7 @@ function safeSubscribe(signal, handler) {
 function greet(player) {
   if (!player?.isValid || greeted.has(player.id)) return;
   greeted.add(player.id);
-  player.sendMessage('§a[Kingdoms] Мод загружен (v4.1.0).');
+  player.sendMessage('§a[Kingdoms] Мод загружен (v4.1.1).');
   player.sendMessage('§7ПКМ по флагу / свиток = меню. ЛКМ = удар.');
   player.sendMessage(
     getChatPrefixMode() === 'before'
@@ -65,7 +65,7 @@ function preparePlacedFlag(player) {
   }
 }
 
-console.warn('[Kingdoms] loading v4.1.0');
+console.warn('[Kingdoms] loading v4.1.1');
 
 function tryBindChatPrefix() {
   const ok = bindChatPrefix();
@@ -203,4 +203,4 @@ system.runInterval(() => {
   }
 }, 1200);
 
-console.warn('[Kingdoms] ready v4.1.0');
+console.warn('[Kingdoms] ready v4.1.1');
