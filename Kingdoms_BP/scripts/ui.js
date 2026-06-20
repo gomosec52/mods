@@ -27,6 +27,24 @@ function kingdomsTitle(title) {
   return title;
 }
 
+function gridTitle(title) {
+  return `kdm-grid:${title}`;
+}
+
+const ICONS = {
+  summary: 'textures/items/menu_scroll',
+  join: 'textures/ui/kingdoms/join',
+  accept: 'textures/ui/kingdoms/accept',
+  kick: 'textures/ui/kingdoms/kick',
+  upgrade: 'textures/ui/kingdoms/upgrade',
+  tax: 'textures/ui/kingdoms/tax',
+  prefix: 'textures/ui/kingdoms/prefix',
+  war: 'textures/ui/kingdoms/war',
+  alliance: 'textures/ui/kingdoms/alliance',
+  disband: 'textures/ui/kingdoms/disband',
+  leave: 'textures/ui/kingdoms/leave'
+};
+
 function buildSettlementSummaryRows(settlement, tier, next) {
   const rows = [
     `Название: ${settlement.name}`,
@@ -139,37 +157,38 @@ export async function openFlagMenu(player, settlementId) {
   const disbandLabel = `Расформировать «${settlement.name}»`;
 
   const form = new ActionFormData()
-    .title(kingdomsTitle(`${tier.title} «${settlement.name}»`))
-    .body(buildFlagMenuBody(settlement, tier, next));
+    .title(gridTitle(`${tier.title} «${settlement.name}»`))
+    .body(' ');
 
   const ownerActions = [];
-  const addAction = (label, action) => {
-    ownerActions.push({ label, action });
+  const addAction = (label, action, icon) => {
+    ownerActions.push({ label, action, icon });
   };
 
-  addAction('Книга владений', () => openSettlementSummaryMenu(player, settlement));
+  addAction('Сводка', () => openSettlementSummaryMenu(player, settlement), ICONS.summary);
 
   if (isOwner) {
-    addAction(acceptLabel, () => openAcceptPlayerMenu(player, settlement));
-    addAction('Изгнать игрока', () => openKickPlayerMenu(player, settlement));
+    addAction(acceptLabel, () => openAcceptPlayerMenu(player, settlement), ICONS.accept);
+    addAction('Изгнать', () => openKickPlayerMenu(player, settlement), ICONS.kick);
     if (next) {
-      addAction(upgradeLabel, () => openUpgradeMenu(player, settlement, next));
+      addAction(upgradeLabel, () => openUpgradeMenu(player, settlement, next), ICONS.upgrade);
     }
-    addAction('Собрать подать', () => collectTax(player, settlement));
-    addAction('Назначить титул', () => openPrefixMenu(player, settlement));
-    addAction('Объявить войну', () => openWarMenu(player, settlement));
-    addAction('Заключить альянс', () => openAllianceMenu(player, settlement));
-    addAction(disbandLabel, () => openDisbandMenu(player, settlement));
+    addAction('Подать', () => collectTax(player, settlement), ICONS.tax);
+    addAction('Титул', () => openPrefixMenu(player, settlement), ICONS.prefix);
+    addAction('Война', () => openWarMenu(player, settlement), ICONS.war);
+    addAction('Альянс', () => openAllianceMenu(player, settlement), ICONS.alliance);
+    addAction('Роспуск', () => openDisbandMenu(player, settlement), ICONS.disband);
   } else if (member) {
-    addAction('Покинуть поселение', () => {
+    addAction('Покинуть', () => {
       removeMember(settlement, player.id);
       player.nameTag = player.name;
-    });
+    }, ICONS.leave);
   } else {
-    addAction('Подать заявку на вступление', () => addMember(settlement, player));
+    addAction('Вступить', () => addMember(settlement, player), ICONS.join);
   }
 
-  for (const { label } of ownerActions) form.button(label);
+  while (ownerActions.length < 12) ownerActions.push({ label: ' ', action: null, icon: '' });
+  for (const { label, icon } of ownerActions) form.button(label, icon);
 
   const response = await form.show(player);
   if (response.canceled) return;
