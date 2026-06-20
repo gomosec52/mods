@@ -4,7 +4,7 @@
     "name": "Kingdoms Survival BP",
     "description": "Система королевств: деревни, войны, альянсы, налоги и мораль",
     "uuid": "7c4e9a12-3b5f-4d8e-9a01-000000000001",
-    "version": [4, 1, 0],
+    "version": [4, 1, 1],
     "min_engine_version": [1, 26, 0]
   },
   "modules": [

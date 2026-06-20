@@ -37,9 +37,9 @@
 
   "kdm_long_form@common_dialogs.main_panel_no_buttons": {
     "$title_panel": "server_form.kdm_title_panel",
-    "$title_size": ["100% - 20px", 72],
-    "$title_max_size": ["100% - 20px", 72],
-    "size": [450, 520],
+    "$title_size": ["100% - 20px", 118],
+    "$title_max_size": ["100% - 20px", 118],
+    "size": [450, 540],
     "$text_name": "#title_text",
     "$title_text_binding_type": "none",
     "$child_control": "server_form.kdm_content_panel",
@@ -59,8 +59,8 @@
 
   "kdm_custom_form@common_dialogs.main_panel_no_buttons": {
     "$title_panel": "server_form.kdm_title_panel",
-    "$title_size": ["100% - 20px", 24],
-    "$title_max_size": ["100% - 20px", 24],
+    "$title_size": ["100% - 20px", 32],
+    "$title_max_size": ["100% - 20px", 32],
     "size": [450, 300],
     "$text_name": "#title_text",
     "$title_text_binding_type": "none",
@@ -106,19 +106,42 @@
   },
 
   "kdm_title_panel": {
-    "type": "stack_panel",
-    "orientation": "vertical",
+    "type": "panel",
     "size": ["100%", "100%"],
     "bindings": [
-      { "binding_name": "#title_text" },
-      { "binding_name": "#form_text" }
+      { "binding_name": "#title_text" }
     ],
     "controls": [
       {
-        "title@server_form.kdm_title_label": {}
-      },
+        "title_scroll@common.scrolling_panel": {
+          "anchor_to": "top_left",
+          "anchor_from": "top_left",
+          "$show_background": false,
+          "$always_handle_scrolling": true,
+          "$allow_scrolling_even_when_content_fits": true,
+          "$scroll_box_visible": true,
+          "$scroll_box_visible_touch": true,
+          "size": ["100%", "100%"],
+          "$scrolling_content": "server_form.kdm_title_scroll",
+          "$scroll_size": [8, "100% - 2px"],
+          "$scroll_size_touch": [12, "100% - 2px"],
+          "$scrolling_pane_size": ["100% - 10px", "100% - 2px"],
+          "$scrolling_pane_offset": [2, 0],
+          "$scroll_bar_right_padding_size": [0, 0]
+        }
+      }
+    ]
+  },
+
+  "kdm_title_scroll": {
+    "type": "stack_panel",
+    "size": ["100%", "100%c"],
+    "orientation": "vertical",
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "controls": [
       {
-        "info@server_form.kdm_info_label": {}
+        "title@server_form.kdm_title_label": {}
       }
     ]
   },
@@ -128,11 +151,12 @@
     "anchor_from": "top_middle",
     "anchor_to": "top_middle",
     "offset": [0, 2],
-    "size": ["100%", "default"],
+    "size": ["100% - 8px", "default"],
     "text_alignment": "center",
     "color": [0.32, 0.16, 0.05, 1.0],
-    "font_scale_factor": 1.1,
-    "shadow": false,
+    "font_scale_factor": 1.0,
+    "line_padding": 3,
+    "shadow": true,
     "bindings": [
       { "binding_name": "#title_text" },
       {
@@ -143,35 +167,10 @@
     ]
   },
 
-  "kdm_info_label": {
-    "type": "label",
-    "anchor_from": "top_middle",
-    "anchor_to": "top_middle",
-    "offset": [0, 2],
-    "size": ["100%", "default"],
-    "text_alignment": "center",
-    "color": [0.22, 0.11, 0.03, 1.0],
-    "font_scale_factor": 0.92,
-    "line_padding": 2,
-    "shadow": false,
-    "bindings": [
-      { "binding_name": "#form_text" },
-      {
-        "binding_type": "view",
-        "source_property_name": "#form_text",
-        "target_property_name": "#text"
-      },
-      {
-        "binding_type": "view",
-        "source_property_name": "(not ((#form_text - ' ') = #form_text))",
-        "target_property_name": "#visible"
-      }
-    ]
-  },
-
   "kdm_content_panel": {
-    "type": "panel",
+    "type": "stack_panel",
     "size": ["100%", "100%"],
+    "orientation": "vertical",
     "anchor_from": "top_left",
     "anchor_to": "top_left",
     "bindings": [
@@ -180,21 +179,119 @@
     ],
     "controls": [
       {
-        "buttons_scroll@common.scrolling_panel": {
-          "anchor_to": "top_left",
-          "anchor_from": "top_left",
-          "$show_background": false,
-          "$always_handle_scrolling": true,
-          "$allow_scrolling_even_when_content_fits": true,
-          "$scroll_box_visible": true,
-          "$scroll_box_visible_touch": true,
+        "split_row": {
+          "type": "stack_panel",
           "size": ["100%", "100%"],
-          "$scrolling_content": "server_form.kdm_right_scroll",
-          "$scroll_size": [10, "100% - 4px"],
-          "$scroll_size_touch": [14, "100% - 4px"],
-          "$scrolling_pane_size": ["100% - 12px", "100% - 2px"],
-          "$scrolling_pane_offset": [2, 0],
-          "$scroll_bar_right_padding_size": [0, 0]
+          "orientation": "horizontal",
+          "anchor_from": "top_left",
+          "anchor_to": "top_left",
+          "controls": [
+            {
+              "left_col": {
+                "type": "panel",
+                "size": [188, "100%"],
+                "controls": [
+                  {
+                    "left_scroll@common.scrolling_panel": {
+                      "anchor_to": "top_left",
+                      "anchor_from": "top_left",
+                      "$show_background": false,
+                      "$always_handle_scrolling": true,
+                      "$allow_scrolling_even_when_content_fits": true,
+                      "$scroll_box_visible": true,
+                      "$scroll_box_visible_touch": true,
+                      "size": ["100%", "100%"],
+                      "$scrolling_content": "server_form.kdm_left_scroll",
+                      "$scroll_size": [10, "100% - 4px"],
+                      "$scroll_size_touch": [14, "100% - 4px"],
+                      "$scrolling_pane_size": ["100% - 12px", "100% - 2px"],
+                      "$scrolling_pane_offset": [2, 0],
+                      "$scroll_bar_right_padding_size": [0, 0]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "divider": {
+                "type": "image",
+                "texture": "textures/ui/White",
+                "color": [0.35, 0.2, 0.08, 0.45],
+                "size": [2, "100%"]
+              }
+            },
+            {
+              "right_col": {
+                "type": "panel",
+                "size": ["fill", "100%"],
+                "controls": [
+                  {
+                    "right_scroll@common.scrolling_panel": {
+                      "anchor_to": "top_left",
+                      "anchor_from": "top_left",
+                      "$show_background": false,
+                      "$always_handle_scrolling": true,
+                      "$allow_scrolling_even_when_content_fits": true,
+                      "$scroll_box_visible": true,
+                      "$scroll_box_visible_touch": true,
+                      "size": ["100%", "100%"],
+                      "$scrolling_content": "server_form.kdm_right_scroll",
+                      "$scroll_size": [10, "100% - 4px"],
+                      "$scroll_size_touch": [14, "100% - 4px"],
+                      "$scrolling_pane_size": ["100% - 12px", "100% - 2px"],
+                      "$scrolling_pane_offset": [2, 0],
+                      "$scroll_bar_right_padding_size": [0, 0]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "kdm_left_scroll": {
+    "type": "stack_panel",
+    "size": [175, "100%c"],
+    "orientation": "vertical",
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "controls": [
+      {
+        "label_wrap": {
+          "type": "panel",
+          "size": ["100%", "100%c"],
+          "controls": [
+            {
+              "stats_label": {
+                "type": "label",
+                "offset": [6, 6],
+                "color": [0.15, 0.08, 0.02, 1.0],
+                "font_scale_factor": 1.05,
+                "line_padding": 3,
+                "shadow": true,
+                "size": [165, "default"],
+                "anchor_from": "top_left",
+                "anchor_to": "top_left",
+                "text_alignment": "left",
+                "bindings": [
+                  { "binding_name": "#form_text" },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "#form_text",
+                    "target_property_name": "#text"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "(not ((#form_text - ' ') = #form_text))",
+                    "target_property_name": "#visible"
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ]
@@ -236,7 +333,10 @@
           "$button_text": "#form_button_text",
           "$button_text_binding_type": "collection",
           "$button_text_grid_collection_name": "form_buttons",
-          "$button_text_max_size": ["100%", 18],
+          "$button_text_max_size": ["100% - 8px", 18],
+          "$button_text_color": [0.98, 0.95, 0.88, 1.0],
+          "$button_text_hover_color": [1.0, 1.0, 1.0, 1.0],
+          "$button_text_pressed_color": [1.0, 0.92, 0.92, 1.0],
           "$default_button_texture": "textures/ui/kingdoms/button_wood",
           "$hover_button_texture": "textures/ui/kingdoms/button_wood",
           "$pressed_button_texture": "textures/ui/kingdoms/button_danger",

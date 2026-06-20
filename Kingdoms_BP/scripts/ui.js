@@ -15,8 +15,9 @@ import { refreshSettlementStats } from './territory.js';
 import { declareWar } from './war.js';
 import { world } from '@minecraft/server';
 
-function kingdomsTitle(title) {
-  return `kdm:${title}`;
+function kingdomsTitle(title, details = '') {
+  if (!details) return `kdm:${title}`;
+  return `kdm:${title}\n${details}`;
 }
 
 async function askText(player, title, label, placeholder) {
@@ -62,7 +63,7 @@ export async function openFlagMenu(player, settlementId) {
   ].join('\n');
 
   const form = new ActionFormData()
-    .title(kingdomsTitle(`${tier.title} «${settlement.name}»`))
+    .title(kingdomsTitle(`${tier.title} «${settlement.name}»`, leftInfo))
     .body(leftInfo);
 
   const ownerActions = [];
