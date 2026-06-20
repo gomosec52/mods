@@ -37,8 +37,8 @@
 
   "kdm_long_form@common_dialogs.main_panel_no_buttons": {
     "$title_panel": "server_form.kdm_title_panel",
-    "$title_size": ["100% - 20px", 24],
-    "$title_max_size": ["100% - 20px", 24],
+    "$title_size": ["100% - 20px", 72],
+    "$title_max_size": ["100% - 20px", 72],
     "size": [450, 520],
     "$text_name": "#title_text",
     "$title_text_binding_type": "none",
@@ -106,14 +106,19 @@
   },
 
   "kdm_title_panel": {
-    "type": "panel",
+    "type": "stack_panel",
+    "orientation": "vertical",
     "size": ["100%", "100%"],
     "bindings": [
-      { "binding_name": "#title_text" }
+      { "binding_name": "#title_text" },
+      { "binding_name": "#form_text" }
     ],
     "controls": [
       {
         "title@server_form.kdm_title_label": {}
+      },
+      {
+        "info@server_form.kdm_info_label": {}
       }
     ]
   },
@@ -138,10 +143,35 @@
     ]
   },
 
+  "kdm_info_label": {
+    "type": "label",
+    "anchor_from": "top_middle",
+    "anchor_to": "top_middle",
+    "offset": [0, 2],
+    "size": ["100%", "default"],
+    "text_alignment": "center",
+    "color": [0.22, 0.11, 0.03, 1.0],
+    "font_scale_factor": 0.92,
+    "line_padding": 2,
+    "shadow": false,
+    "bindings": [
+      { "binding_name": "#form_text" },
+      {
+        "binding_type": "view",
+        "source_property_name": "#form_text",
+        "target_property_name": "#text"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_text - ' ') = #form_text))",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
   "kdm_content_panel": {
-    "type": "stack_panel",
+    "type": "panel",
     "size": ["100%", "100%"],
-    "orientation": "vertical",
     "anchor_from": "top_left",
     "anchor_to": "top_left",
     "bindings": [
@@ -150,107 +180,21 @@
     ],
     "controls": [
       {
-        "split_row": {
-          "type": "stack_panel",
-          "size": ["100%", "100%"],
-          "orientation": "horizontal",
-          "anchor_from": "top_left",
+        "buttons_scroll@common.scrolling_panel": {
           "anchor_to": "top_left",
-          "controls": [
-            {
-              "left_col": {
-                "type": "panel",
-                "size": [188, "100%"],
-                "controls": [
-                  {
-                    "left_scroll@common.scrolling_panel": {
-                      "anchor_to": "top_left",
-                      "anchor_from": "top_left",
-                      "$show_background": false,
-                      "$always_handle_scrolling": true,
-                      "$allow_scrolling_even_when_content_fits": true,
-                      "$scroll_box_visible": true,
-                      "$scroll_box_visible_touch": true,
-                      "size": ["100%", "100%"],
-                      "$scrolling_content": "server_form.kdm_left_scroll",
-                      "$scroll_size": [10, "100% - 4px"],
-                      "$scroll_size_touch": [14, "100% - 4px"],
-                      "$scrolling_pane_size": ["100% - 12px", "100% - 2px"],
-                      "$scrolling_pane_offset": [2, 0],
-                      "$scroll_bar_right_padding_size": [0, 0]
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "divider": {
-                "type": "image",
-                "texture": "textures/ui/White",
-                "color": [0.35, 0.2, 0.08, 0.45],
-                "size": [2, "100%"]
-              }
-            },
-            {
-              "right_col": {
-                "type": "panel",
-                "size": ["fill", "100%"],
-                "controls": [
-                  {
-                    "right_scroll@common.scrolling_panel": {
-                      "anchor_to": "top_left",
-                      "anchor_from": "top_left",
-                      "$show_background": false,
-                      "$always_handle_scrolling": true,
-                      "$allow_scrolling_even_when_content_fits": true,
-                      "$scroll_box_visible": true,
-                      "$scroll_box_visible_touch": true,
-                      "size": ["100%", "100%"],
-                      "$scrolling_content": "server_form.kdm_right_scroll",
-                      "$scroll_size": [10, "100% - 4px"],
-                      "$scroll_size_touch": [14, "100% - 4px"],
-                      "$scrolling_pane_size": ["100% - 12px", "100% - 2px"],
-                      "$scrolling_pane_offset": [2, 0],
-                      "$scroll_bar_right_padding_size": [0, 0]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  },
-
-  "kdm_left_scroll": {
-    "type": "stack_panel",
-    "size": [175, "100%c"],
-    "orientation": "vertical",
-    "anchor_from": "top_left",
-    "anchor_to": "top_left",
-    "controls": [
-      {
-        "label_wrap": {
-          "type": "panel",
-          "size": ["100%", "100%c"],
-          "controls": [
-            {
-              "stats_label": {
-                "type": "label",
-                "offset": [6, 6],
-                "color": [0.15, 0.08, 0.02, 1.0],
-                "font_scale_factor": 1.05,
-                "line_padding": 3,
-                "shadow": false,
-                "size": [165, "default"],
-                "anchor_from": "top_left",
-                "anchor_to": "top_left",
-                "text_alignment": "left",
-                "text": "#form_text"
-              }
-            }
-          ]
+          "anchor_from": "top_left",
+          "$show_background": false,
+          "$always_handle_scrolling": true,
+          "$allow_scrolling_even_when_content_fits": true,
+          "$scroll_box_visible": true,
+          "$scroll_box_visible_touch": true,
+          "size": ["100%", "100%"],
+          "$scrolling_content": "server_form.kdm_right_scroll",
+          "$scroll_size": [10, "100% - 4px"],
+          "$scroll_size_touch": [14, "100% - 4px"],
+          "$scrolling_pane_size": ["100% - 12px", "100% - 2px"],
+          "$scrolling_pane_offset": [2, 0],
+          "$scroll_bar_right_padding_size": [0, 0]
         }
       }
     ]

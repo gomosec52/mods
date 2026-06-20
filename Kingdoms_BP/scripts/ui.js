@@ -52,6 +52,7 @@ export async function openFlagMenu(player, settlementId) {
   const disbandLabel = `Расформировать «${settlement.name}»`;
 
   const leftInfo = [
+    `Глава: ${settlement.ownerName}`,
     `Прочность: ${settlement.flagHp ?? tier.flagHp} / ${tier.flagHp}`,
     `Территория: ${settlement.radius} блоков`,
     `Налог: ${settlement.taxRate} изумр.`,
@@ -122,7 +123,7 @@ async function openAcceptPlayerMenu(player, settlement) {
     player.sendMessage('§cНет игроков для приглашения.');
     return;
   }
-  const form = new ActionFormData().title(kingdomsTitle('Принять игрока')).body(' ');
+  const form = new ActionFormData().title(kingdomsTitle('Принять игрока'));
   for (const target of online) form.button(target.name);
   const response = await form.show(player);
   if (response.canceled) return;
@@ -135,7 +136,7 @@ async function openKickPlayerMenu(player, settlement) {
     player.sendMessage('§cНекого исключать.');
     return;
   }
-  const form = new ActionFormData().title(kingdomsTitle('Исключить игрока')).body(' ');
+  const form = new ActionFormData().title(kingdomsTitle('Исключить игрока'));
   for (const member of members) form.button(member.playerName);
   const response = await form.show(player);
   if (response.canceled) return;
@@ -160,12 +161,12 @@ async function openPrefixMenu(player, settlement) {
     player.sendMessage('§cНет участников для назначения префикса.');
     return;
   }
-  const memberForm = new ActionFormData().title(kingdomsTitle('Выберите игрока')).body(' ');
+  const memberForm = new ActionFormData().title(kingdomsTitle('Выберите игрока'));
   for (const member of members) memberForm.button(member.playerName);
   const memberResponse = await memberForm.show(player);
   if (memberResponse.canceled) return;
 
-  const prefixForm = new ActionFormData().title(kingdomsTitle('Выберите префикс')).body(' ');
+  const prefixForm = new ActionFormData().title(kingdomsTitle('Выберите префикс'));
   for (const prefix of MEMBER_PREFIXES) prefixForm.button(prefix);
   const prefixResponse = await prefixForm.show(player);
   if (prefixResponse.canceled) return;
@@ -184,7 +185,7 @@ async function openWarMenu(player, settlement) {
     player.sendMessage('§cНет других поселений.');
     return;
   }
-  const form = new ActionFormData().title(kingdomsTitle('Объявить войну')).body(' ');
+  const form = new ActionFormData().title(kingdomsTitle('Объявить войну'));
   for (const other of others) {
     const tier = getTier(other.tierId).title;
     form.button(`${tier} «${other.name}» — ${other.ownerName}`);
@@ -245,7 +246,7 @@ async function openAllianceMenu(player, settlement) {
     player.sendMessage('§cНет других поселений для альянса.');
     return;
   }
-  const form = new ActionFormData().title(kingdomsTitle('Создать альянс')).body(' ');
+  const form = new ActionFormData().title(kingdomsTitle('Создать альянс'));
   for (const other of others) {
     const tier = getTier(other.tierId).title;
     form.button(`${tier} «${other.name}»`);
