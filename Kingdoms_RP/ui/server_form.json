@@ -87,15 +87,7 @@
           "color": [0.9, 0.95, 1.0, 1.0],
           "font_scale_factor": 0.85,
           "shadow": true,
-          "text": "",
-          "bindings": [
-            { "binding_name": "#title_text" },
-            {
-              "binding_type": "view",
-              "source_property_name": "(#title_text - 'kdm-grid:')",
-              "target_property_name": "#text"
-            }
-          ]
+          "text": "Флаг поселения"
         }
       }
     ]
@@ -110,30 +102,17 @@
     "anchor_to": "top_middle",
     "controls": [
       {
-        "tabs": {
+        "info": {
           "type": "stack_panel",
-          "orientation": "horizontal",
-          "size": ["100%", 28],
-          "anchor_from": "top_middle",
-          "anchor_to": "top_middle",
+          "orientation": "vertical",
+          "size": ["100%", 76],
+          "collection_name": "form_buttons",
           "controls": [
-            { "back@server_form.kdm_top_icon": { "$icon": "textures/ui/kingdoms/leave" } },
-            { "settlement@server_form.kdm_top_icon": { "$icon": "textures/items/settlement_flag" } },
-            { "summary@server_form.kdm_top_icon": { "$icon": "textures/items/menu_scroll" } },
-            { "war@server_form.kdm_top_icon": { "$icon": "textures/ui/kingdoms/war" } },
-            { "alliance@server_form.kdm_top_icon": { "$icon": "textures/ui/kingdoms/alliance" } }
+            { "info_0@server_form.kdm_info_line": { "collection_index": 0 } },
+            { "info_1@server_form.kdm_info_line": { "collection_index": 1 } },
+            { "info_2@server_form.kdm_info_line": { "collection_index": 2 } },
+            { "info_3@server_form.kdm_info_line": { "collection_index": 3 } }
           ]
-        }
-      },
-      {
-        "subtitle": {
-          "type": "label",
-          "size": ["100%", 16],
-          "text": "Kingdom Modules",
-          "text_alignment": "center",
-          "color": [0.85, 0.92, 1.0, 1.0],
-          "font_scale_factor": 0.75,
-          "shadow": true
         }
       },
       {
@@ -152,10 +131,10 @@
                 "anchor_to": "top_middle",
                 "collection_name": "form_buttons",
                 "controls": [
-                  { "slot_0@server_form.kdm_grid_tile": { "collection_index": 0 } },
-                  { "slot_1@server_form.kdm_grid_tile": { "collection_index": 1 } },
-                  { "slot_2@server_form.kdm_grid_tile": { "collection_index": 2 } },
-                  { "slot_3@server_form.kdm_grid_tile": { "collection_index": 3 } }
+                  { "slot_0@server_form.kdm_grid_tile": { "collection_index": 4 } },
+                  { "slot_1@server_form.kdm_grid_tile": { "collection_index": 5 } },
+                  { "slot_2@server_form.kdm_grid_tile": { "collection_index": 6 } },
+                  { "slot_3@server_form.kdm_grid_tile": { "collection_index": 7 } }
                 ]
               }
             },
@@ -168,10 +147,10 @@
                 "anchor_to": "top_middle",
                 "collection_name": "form_buttons",
                 "controls": [
-                  { "slot_4@server_form.kdm_grid_tile": { "collection_index": 4 } },
-                  { "slot_5@server_form.kdm_grid_tile": { "collection_index": 5 } },
-                  { "slot_6@server_form.kdm_grid_tile": { "collection_index": 6 } },
-                  { "slot_7@server_form.kdm_grid_tile": { "collection_index": 7 } }
+                  { "slot_4@server_form.kdm_grid_tile": { "collection_index": 8 } },
+                  { "slot_5@server_form.kdm_grid_tile": { "collection_index": 9 } },
+                  { "slot_6@server_form.kdm_grid_tile": { "collection_index": 10 } },
+                  { "slot_7@server_form.kdm_grid_tile": { "collection_index": 11 } }
                 ]
               }
             },
@@ -184,10 +163,10 @@
                 "anchor_to": "top_middle",
                 "collection_name": "form_buttons",
                 "controls": [
-                  { "slot_8@server_form.kdm_grid_tile": { "collection_index": 8 } },
-                  { "slot_9@server_form.kdm_grid_tile": { "collection_index": 9 } },
-                  { "slot_10@server_form.kdm_grid_tile": { "collection_index": 10 } },
-                  { "slot_11@server_form.kdm_grid_tile": { "collection_index": 11 } }
+                  { "slot_8@server_form.kdm_grid_tile": { "collection_index": 12 } },
+                  { "slot_9@server_form.kdm_grid_tile": { "collection_index": 13 } },
+                  { "slot_10@server_form.kdm_grid_tile": { "collection_index": 14 } },
+                  { "slot_11@server_form.kdm_grid_tile": { "collection_index": 15 } }
                 ]
               }
             }
@@ -197,18 +176,23 @@
     ]
   },
 
-  "kdm_top_icon": {
-    "type": "panel",
-    "size": [28, 24],
-    "controls": [
+  "kdm_info_line": {
+    "type": "label",
+    "size": ["100%", 18],
+    "text_alignment": "center",
+    "color": [1.0, 1.0, 1.0, 1.0],
+    "font_scale_factor": 0.7,
+    "shadow": true,
+    "bindings": [
       {
-        "icon": {
-          "type": "image",
-          "texture": "$icon",
-          "size": [16, 16],
-          "anchor_from": "center",
-          "anchor_to": "center"
-        }
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons",
+        "binding_name_override": "#text"
       }
     ]
   },
@@ -254,44 +238,15 @@
         }
       },
       {
-        "icon": {
-          "type": "image",
-          "size": [22, 22],
-          "offset": [0, -12],
-          "anchor_from": "center",
-          "anchor_to": "center",
-          "layer": 8,
-          "bindings": [
-            {
-              "binding_name": "#form_button_texture",
-              "binding_name_override": "#texture",
-              "binding_type": "collection",
-              "binding_collection_name": "form_buttons"
-            },
-            {
-              "binding_name": "#form_button_texture_file_system",
-              "binding_name_override": "#texture_file_system",
-              "binding_type": "collection",
-              "binding_collection_name": "form_buttons"
-            },
-            {
-              "binding_type": "view",
-              "source_property_name": "(not ((#texture = '') or (#texture = 'loading')))",
-              "target_property_name": "#visible"
-            }
-          ]
-        }
-      },
-      {
         "label": {
           "type": "label",
-          "size": [78, 20],
-          "offset": [0, 16],
+          "size": [78, 42],
+          "offset": [0, 0],
           "anchor_from": "center",
           "anchor_to": "center",
           "text_alignment": "center",
-          "color": [0.92, 0.95, 1.0, 1.0],
-          "font_scale_factor": 0.62,
+          "color": [1.0, 1.0, 1.0, 1.0],
+          "font_scale_factor": 0.76,
           "shadow": true,
           "layer": 9,
           "bindings": [

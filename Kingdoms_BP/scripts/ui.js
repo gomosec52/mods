@@ -31,19 +31,16 @@ function gridTitle(title) {
   return `kdm-grid:${title}`;
 }
 
-const ICONS = {
-  summary: 'textures/items/menu_scroll',
-  join: 'textures/ui/kingdoms/join',
-  accept: 'textures/ui/kingdoms/accept',
-  kick: 'textures/ui/kingdoms/kick',
-  upgrade: 'textures/ui/kingdoms/upgrade',
-  tax: 'textures/ui/kingdoms/tax',
-  prefix: 'textures/ui/kingdoms/prefix',
-  war: 'textures/ui/kingdoms/war',
-  alliance: 'textures/ui/kingdoms/alliance',
-  disband: 'textures/ui/kingdoms/disband',
-  leave: 'textures/ui/kingdoms/leave'
-};
+function buildFlagInfoRows(settlement, tier, next) {
+  return [
+    `${tier.title} «${settlement.name}» | Глава: ${settlement.ownerName}`,
+    `Прочность: ${settlement.flagHp ?? tier.flagHp}/${tier.flagHp} | Мораль: ${settlement.morale ?? 0}/100`,
+    `Налог: ${settlement.taxRate} изумр. | Жители: ${settlement.villagersNearby} | Участники: ${settlement.members.length}`,
+    next
+      ? `Улучшение: ${next.title} | Цена: ${tier.upgradeCost} | Нужно жителей: ${tier.villagersRequired}`
+      : 'Достигнут максимальный уровень развития'
+  ];
+}
 
 function buildSettlementSummaryRows(settlement, tier, next) {
   const rows = [
@@ -161,39 +158,42 @@ export async function openFlagMenu(player, settlementId) {
     .body(' ');
 
   const ownerActions = [];
-  const addAction = (label, action, icon) => {
-    ownerActions.push({ label, action, icon });
+  const addAction = (label, action) => {
+    ownerActions.push({ label, action });
   };
 
-  addAction('Сводка', () => openSettlementSummaryMenu(player, settlement), ICONS.summary);
+  addAction('Сводка', () => openSettlementSummaryMenu(player, settlement));
 
   if (isOwner) {
-    addAction(acceptLabel, () => openAcceptPlayerMenu(player, settlement), ICONS.accept);
-    addAction('Изгнать', () => openKickPlayerMenu(player, settlement), ICONS.kick);
+    addAction(acceptLabel, () => openAcceptPlayerMenu(player, settlement));
+    addAction('Изгнать', () => openKickPlayerMenu(player, settlement));
     if (next) {
-      addAction(upgradeLabel, () => openUpgradeMenu(player, settlement, next), ICONS.upgrade);
+      addAction(upgradeLabel, () => openUpgradeMenu(player, settlement, next));
     }
-    addAction('Подать', () => collectTax(player, settlement), ICONS.tax);
-    addAction('Титул', () => openPrefixMenu(player, settlement), ICONS.prefix);
-    addAction('Война', () => openWarMenu(player, settlement), ICONS.war);
-    addAction('Альянс', () => openAllianceMenu(player, settlement), ICONS.alliance);
-    addAction('Роспуск', () => openDisbandMenu(player, settlement), ICONS.disband);
+    addAction('Подать', () => collectTax(player, settlement));
+    addAction('Титул', () => openPrefixMenu(player, settlement));
+    addAction('Война', () => openWarMenu(player, settlement));
+    addAction('Альянс', () => openAllianceMenu(player, settlement));
+    addAction('Роспуск', () => openDisbandMenu(player, settlement));
   } else if (member) {
     addAction('Покинуть', () => {
       removeMember(settlement, player.id);
       player.nameTag = player.name;
-    }, ICONS.leave);
+    });
   } else {
-    addAction('Вступить', () => addMember(settlement, player), ICONS.join);
+    addAction('Вступить', () => addMember(settlement, player));
   }
 
-  while (ownerActions.length < 12) ownerActions.push({ label: ' ', action: null, icon: '' });
-  for (const { label, icon } of ownerActions) form.button(label, icon);
+  const infoRows = buildFlagInfoRows(settlement, tier, next);
+  for (const row of infoRows) form.button(row);
+  while (ownerActions.length < 12) ownerActions.push({ label: ' ', action: null });
+  for (const { label } of ownerActions) form.button(label);
 
   const response = await form.show(player);
   if (response.canceled) return;
+  if (response.selection < infoRows.length) return;
 
-  const action = ownerActions[response.selection]?.action;
+  const action = ownerActions[response.selection - infoRows.length]?.action;
   if (action) await action();
 }
 
