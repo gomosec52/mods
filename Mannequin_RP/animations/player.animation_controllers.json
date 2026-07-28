@@ -1,0 +1,36 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.mannequin.root": {
+      "initial_state": "default",
+      "states": {
+        "default": {
+          "animations": [
+            "base",
+            "look",
+            {
+              "move": "query.modified_move_speed > 0.02"
+            }
+          ],
+          "transitions": [
+            { "climbing": "query.is_climbing" },
+            { "sneaking": "query.is_sneaking" },
+            { "swimming": "query.is_swimming" }
+          ]
+        },
+        "climbing": {
+          "animations": ["base", "look", "climb"],
+          "transitions": [{ "default": "!query.is_climbing" }]
+        },
+        "sneaking": {
+          "animations": ["base", "look", "sneak", "move"],
+          "transitions": [{ "default": "!query.is_sneaking" }]
+        },
+        "swimming": {
+          "animations": ["base", "look", "swim"],
+          "transitions": [{ "default": "!query.is_swimming" }]
+        }
+      }
+    }
+  }
+}

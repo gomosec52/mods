@@ -1,0 +1,23 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Mannequin Player NPC RP",
+    "description": "Player model, animations and textures for mannequin NPCs",
+    "uuid": "f379dc32-c03f-48f1-8c3d-5bfafb6d1af8",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "ec59b0b0-6620-4c31-b8d1-95264513f43d",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "c7b7de9f-c59e-45dc-a163-f22c51fd4f6f",
+      "version": [1, 0, 0]
+    }
+  ]
+}
