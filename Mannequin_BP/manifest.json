@@ -1,0 +1,35 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Mannequin Player NPC BP",
+    "description": "Realistic player-like NPC behavior pack for hide-and-seek maps",
+    "uuid": "c7b7de9f-c59e-45dc-a163-f22c51fd4f6f",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "887fc34f-c13f-4a7f-ab28-fb2910cb5493",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "9fc98a94-633a-4ab9-8a87-e0a8c369173f",
+      "entry": "scripts/main.js",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.12.0"
+    },
+    {
+      "uuid": "f379dc32-c03f-48f1-8c3d-5bfafb6d1af8",
+      "version": [1, 0, 0]
+    }
+  ],
+  "capabilities": ["script_eval"]
+}

@@ -1,0 +1,43 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "mannequin:player_npc",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "skin_0": "textures/entity/mannequin/steve",
+        "skin_1": "textures/entity/mannequin/alex",
+        "skin_2": "textures/entity/mannequin/custom_1",
+        "skin_3": "textures/entity/mannequin/custom_2",
+        "skin_4": "textures/entity/mannequin/custom_3"
+      },
+      "geometry": {
+        "default": "geometry.mannequin_player"
+      },
+      "animations": {
+        "base": "animation.mannequin.base",
+        "move": "animation.mannequin.move",
+        "look": "animation.mannequin.look",
+        "climb": "animation.mannequin.climb",
+        "sneak": "animation.mannequin.sneak",
+        "swim": "animation.mannequin.swim",
+        "swing": "animation.mannequin.swing",
+        "controller": "controller.animation.mannequin.root"
+      },
+      "scripts": {
+        "animate": [
+          "controller"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.mannequin_player"
+      ],
+      "spawn_egg": {
+        "texture": "spawn_egg",
+        "texture_index": 0
+      }
+    }
+  }
+}
